@@ -1,3 +1,11 @@
+// Phalanx VFD Clock entrypoint
+// Copyright (c) Danny de Bruijne 2021. All rights reserved.
+
+/* Resources
+	- https://arduino-esp8266.readthedocs.io/en/latest/index.html
+	- https://github.com/witnessmenow/spotify-api-arduino
+*/
+
 #include <ArduinoWiFiServer.h>
 #include <BearSSLHelpers.h>
 #include <CertStoreBearSSL.h>
@@ -16,14 +24,16 @@
 #include <WiFiServerSecure.h>
 #include <WiFiServerSecureBearSSL.h>
 #include <WiFiUdp.h>
-
+#include <NTPClient.h>
 #include <SPI.h>
 
 #include "constants.h"
 
-byte mac[6];
-IPAddress apIp(8, 8, 8, 8);
+DeviceMode currentDeviceMode = DeviceMode::Boot;
 bool doLoop = false;
+
+WiFiUDP ntpUDP;
+NTPClient timeClient(ntpUDP, "pool.ntp.org");
 
 void setup()
 {
@@ -36,189 +46,88 @@ void setup()
 	digitalWrite(GPIO_LATCH, HIGH);
 
 	Serial.begin(115200);
-	Serial.println("");
-	WiFi.macAddress(mac);
-	WiFi.mode(WIFI_AP);
+	Serial.println("Phalanx is initializing...");
 
-	WiFi.softAPConfig(apIp, apIp, IPAddress(255, 255, 255, 0));
-	WiFi.softAP("ESP M2");
-	
-	//max pins to have high at the same time now is 19 before voltage drops under 3v.
+	doLoop = startInNormalMode();
+
+	Serial.println("Phalanx Initialized!");
+}
+
+bool startInConfigMode()
+{
+	IPAddress ip = IPAddress(192, 168, 0, 1);
+	IPAddress subnetMask = IPAddress(255, 255, 255, 0);
+	uint8_t macAddr[6];
+
+	WiFi.softAPmacAddress(macAddr);
+	WiFi.softAPConfig(ip, ip, subnetMask);
+	WiFi.softAP("Phalanx-IV6");
+
 	digitalWrite(GPIO_LATCH, LOW);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, B00000000);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, B00000000);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, B00000000);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, B00000000);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, B00000000);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, B00001101);
+	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, TubeCharacter::dot);
+	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, TubeCharacter::dot);
+	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, TubeCharacter::F | TubeCharacter::dot);
+	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, TubeCharacter::n);
+	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, TubeCharacter::o);
+	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, TubeCharacter::c);
 	digitalWrite(GPIO_LATCH, HIGH);
 
+	currentDeviceMode = DeviceMode::Config;
+
+	return false;
+}
+
+bool startInNormalMode()
+{
+	// Connect to WLAN
+	WiFi.begin("Schotsman_IOT", "pannenkoekmetkaas");
+
+	digitalWrite(GPIO_LATCH, LOW);
+	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, TubeCharacter::dot);
+	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, TubeCharacter::dot);
+	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, TubeCharacter::n | TubeCharacter::dot);
+	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, TubeCharacter::n);
+	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, TubeCharacter::o);
+	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, TubeCharacter::c);
+	digitalWrite(GPIO_LATCH, HIGH);
+	while (WiFi.status() != WL_CONNECTED) 
+		delay(100);
+
+	Serial.println(WiFi.localIP());
+
+	timeClient.begin();
+	timeClient.setTimeOffset(0);
+	timeClient.update();
 	delay(1000);
-	Serial.println("Hola!");
-	shiftVoltageTest();
-	//doLoop = true;
+
+	currentDeviceMode = DeviceMode::Normal;
+
+	return true;
 }
 
 void loop()
 {
-	if(!doLoop) return;
-
-	loopDemo();
-}
-
-void loopDemo()
-{
-	digitalWrite(GPIO_LATCH, LOW);
-	for (int i = 0; i < 5; i++)
-		shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, B00000000);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, letters::h);
-	digitalWrite(GPIO_LATCH, HIGH);
-	Serial.println("h");
-	delay(400);
-
-	digitalWrite(GPIO_LATCH, LOW);
-	for (int i = 0; i < 5; i++)
-		shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, B00000000);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, letters::E);
-	digitalWrite(GPIO_LATCH, HIGH);
-	Serial.println("E");
-	delay(400);
-
-	digitalWrite(GPIO_LATCH, LOW);
-	for (int i = 0; i < 5; i++)
-		shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, B00000000);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, letters::L);
-	digitalWrite(GPIO_LATCH, HIGH);
-	Serial.println("L");
-	delay(400);
-
-	digitalWrite(GPIO_LATCH, LOW);
-	for (int i = 0; i < 5; i++)
-		shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, B00000000);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, letters::l);
-	digitalWrite(GPIO_LATCH, HIGH);
-	Serial.println("l");
-	delay(400);
-
-	digitalWrite(GPIO_LATCH, LOW);
-	for (int i = 0; i < 5; i++)
-		shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, B00000000);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, letters::o);
-	digitalWrite(GPIO_LATCH, HIGH);
-	Serial.println("o");
-	delay(400);
-
-	digitalWrite(GPIO_LATCH, LOW);
-	for (int i = 0; i < 5; i++)
-		shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, B00000000);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, letters::blank);
-	digitalWrite(GPIO_LATCH, HIGH);
-	Serial.println("blank");
-	delay(400);
-
-	for (int number = 0; number < 10; number++)
-	{
-		digitalWrite(GPIO_LATCH, LOW);
-		for (int tube = 0; tube < 6; tube++)
-		{
-			if(tube == 5)
-				shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, bnum[number]);
-			else
-				shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, bnum[11]);
-			
-		}
-		digitalWrite(GPIO_LATCH, HIGH);
-		Serial.println(number);
-		delay(400);
+	if(!doLoop) {
+		delay(1);
+		return;
 	}
 
-	digitalWrite(GPIO_LATCH, LOW);
-	for (int i = 0; i < 5; i++)
-		shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, B00000000);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, letters::dot);
-	digitalWrite(GPIO_LATCH, HIGH);
-	Serial.println(".");
-	delay(400);
+	shiftCurrentTime();
+	delay(100);
 }
 
-void loopFullAllTubes()
+void shiftCurrentTime()
 {
-	digitalWrite(GPIO_LATCH, LOW);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, B11111111);	// leftmost tube seems to bring a voltage drop?
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, B00000000);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, B00000000);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, B00000000);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, B00000000);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, B00000000);
-	digitalWrite(GPIO_LATCH, HIGH);
-	Serial.println("6");
-	delay(2000);
+	int hour = timeClient.getHours();
+	int minute = timeClient.getMinutes();
+	int second = timeClient.getSeconds();
 
 	digitalWrite(GPIO_LATCH, LOW);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, B00000000);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, B11111111);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, B00000000);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, B00000000);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, B00000000);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, B00000000);
-	digitalWrite(GPIO_LATCH, HIGH);
-	Serial.println("5");
-	delay(2000);
-
-	digitalWrite(GPIO_LATCH, LOW);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, B00000000);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, B00000000);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, B11111111);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, B00000000);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, B00000000);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, B00000000);
-	digitalWrite(GPIO_LATCH, HIGH);
-	Serial.println("4");
-	delay(2000);
-
-	digitalWrite(GPIO_LATCH, LOW);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, B00000000);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, B00000000);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, B00000000);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, B11111111);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, B00000000);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, B00000000);
-	digitalWrite(GPIO_LATCH, HIGH);
-	Serial.println("3");
-	delay(2000);
-
-	digitalWrite(GPIO_LATCH, LOW);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, B00000000);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, B00000000);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, B00000000);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, B00000000);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, B11111111);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, B00000000);
-	digitalWrite(GPIO_LATCH, HIGH);
-	Serial.println("2");
-	delay(2000);
-
-	digitalWrite(GPIO_LATCH, LOW);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, B00000000);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, B00000000);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, B00000000);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, B00000000);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, B00000000);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, B11111111);
-	digitalWrite(GPIO_LATCH, HIGH);
-	Serial.println("1");
-	delay(2000);
-}
-
-void shiftVoltageTest()
-{
-	// This should give us a voltage right around 3,05-10v. Enough to test so we can debug the hardware and still flash the microcontroller without having to resort to hardware mods.
-	digitalWrite(GPIO_LATCH, LOW);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, B00000000);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, B00000000);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, B11111111);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, B00000001);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, B00000011);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, B11111111);
+	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, TubeDigit[second % 10]);
+	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, TubeDigit[second / 10]);
+	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, TubeDigit[minute % 10] | TubeCharacter::dot);
+	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, TubeDigit[minute / 10]);
+	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, TubeDigit[hour % 10] | TubeCharacter::dot);
+	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, TubeDigit[hour / 10]);
 	digitalWrite(GPIO_LATCH, HIGH);
 }
