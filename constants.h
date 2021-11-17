@@ -1,16 +1,12 @@
+#ifndef CONSTANTS_H
+#define CONSTANTS_H
+
 #define GPIO_DATA 13
 #define GPIO_CLOCK 14
 #define GPIO_LATCH 15
 #define TIMER_INTERVAL_uS 200 // 200 = safe value for 6 digits. You can go down to 150 for 4-digit one. Going too low will cause crashes.
 
-enum DeviceMode 
-{
-    Boot,
-    Config,
-    Normal,
-};
-
-uint8_t TubeDigit[10] = {
+static uint8_t TubeDigit[10] = {
     B11111100, // 0
     B01100000, // 1
     B11011010, // 2
@@ -37,3 +33,5 @@ public:
     static const uint8_t dot = B00000001;
     static const uint8_t blank = B00000000;
 };
+
+#endif // CONSTANTS_H
