@@ -38,9 +38,17 @@ bool DeviceModeNormal::Stop()
 
 void DeviceModeNormal::OnTick()
 {
-    timeClient->update();
+	if (timeSinceLastNTPUpdate >= delayBetweenNTPUpdates) 
+	{
+		Serial.println("Attempting to update NTP time.");
+    	timeClient->update();
+		timeSinceLastNTPUpdate = 0;
+	}
+
     ShiftCurrentTime();
-    delay(100);
+
+    delay(delayBetweenTicks);
+	timeSinceLastNTPUpdate += delayBetweenTicks;
 }
 
 void DeviceModeNormal::ShiftCurrentTime()
