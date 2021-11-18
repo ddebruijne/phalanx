@@ -9,12 +9,13 @@
 */
 
 /* Todo:
-	- brightness controls
-	- defining & writing string to display
-	- date display (at 30s)
-	- spotify now playing time
-	- OTA updates
 	- 12h mode
+	- brightness controls
+	- timezone storage, DST handling
+	- date display (at 30s)
+	- spotify device mode & mode switching
+	- defining & writing string to display
+	- OTA updates
 */
 
 #define DISPLAYTYPE_IV6
@@ -70,7 +71,7 @@ void handleSave()
 	EEPROM.commit();
 
 	webServer.sendHeader("Location","/"); 
-	webServer.send(303);  
+	webServer.send(303);
 }
 
 void setup()
@@ -79,10 +80,12 @@ void setup()
 	Serial.println("Phalanx is initializing...");
 
 	display.Initialize();
-
 	EEPROM.begin(sizeof(EEPROMData));
 	EEPROM.get(0, saveData);
 
+	// Determine device mode and start it.
+	// Go to config mode if not initialized or wlan connection fails.
+	// If a successful internet connection is established, enable the normal device mode
 	if (saveData.initialized == false)
 		deviceMode = new DeviceModeConfig();
 	else
@@ -107,6 +110,7 @@ void setup()
 	deviceMode->SetDisplay(&display);
 	doLoop = deviceMode->Start();
 
+	// Setup network presentation and web server.
 	MDNS.begin("Phalanx");
 
 	webServer.on("/", HTTP_GET, handleRoot);

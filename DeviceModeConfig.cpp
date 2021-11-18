@@ -1,6 +1,5 @@
 #include "DeviceModeConfig.h"
 
-#include <SPI.h>
 #include <ESP8266WiFi.h>
 #include "constants.h"
 
@@ -29,9 +28,10 @@ bool DeviceModeConfig::Start()
 
 bool DeviceModeConfig::Stop()
 {
-    return false;
+    return true;
 }
 
 void DeviceModeConfig::OnTick()
 {
+	delay(1);
 }
