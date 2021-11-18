@@ -3,8 +3,12 @@
 
 /* Resources
 	- https://arduino-esp8266.readthedocs.io/en/latest/index.html
+	- https://tttapa.github.io/ESP8266/Chap10%20-%20Simple%20Web%20Server.html
 	- https://github.com/witnessmenow/spotify-api-arduino
 */
+
+#include <ESP8266mDNS.h>
+#include <ESP8266WebServer.h> 
 
 #include "constants.h"
 #include "DeviceMode.h"
@@ -12,7 +16,13 @@
 #include "DeviceModeNormal.h"
 
 DeviceMode *deviceMode;
+ESP8266WebServer webServer(80);
 bool doLoop = false;
+
+void handleRoot()
+{
+	webServer.send(200, "text/plain", "Hello world!");
+}
 
 void setup()
 {
@@ -30,6 +40,14 @@ void setup()
 	deviceMode = new DeviceModeNormal();
 	doLoop = deviceMode->Start();
 
+	MDNS.begin("Phalanx");
+
+	webServer.on("/", handleRoot);
+	webServer.onNotFound([](){
+		webServer.send(404, "text/plain", "404: Not found");
+	});
+	webServer.begin();
+
 	Serial.println("Phalanx Initialized!");
 }
 
@@ -39,6 +57,8 @@ void loop()
 		delay(1);
 		return;
 	}
+
+	webServer.handleClient();
 
 	if(deviceMode != nullptr)
 		deviceMode->OnTick();
