@@ -14,6 +14,4 @@ public:
     bool Start();
     bool Stop();
     void OnTick();
-
-    void ShiftCurrentTime(int hour, int minute, int second);
 };

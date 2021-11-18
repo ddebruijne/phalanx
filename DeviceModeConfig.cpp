@@ -14,14 +14,15 @@ bool DeviceModeConfig::Start()
 	WiFi.softAPConfig(ip, ip, subnetMask);
 	WiFi.softAP("Phalanx-IV6");
 
-	digitalWrite(GPIO_LATCH, LOW);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, TubeCharacter::dot);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, TubeCharacter::dot);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, TubeCharacter::F | TubeCharacter::dot);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, TubeCharacter::n);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, TubeCharacter::o);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, TubeCharacter::c);
-	digitalWrite(GPIO_LATCH, HIGH);
+	char data[6] = {
+		TubeCharacter::dot,
+		TubeCharacter::dot,
+		TubeCharacter::F | TubeCharacter::dot,
+		TubeCharacter::n,
+		TubeCharacter::o,
+		TubeCharacter::c,
+	};
+	display->ShiftRaw(data);
 
     return true;
 }

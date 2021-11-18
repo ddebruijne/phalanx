@@ -11,14 +11,16 @@ bool DeviceModeNormal::Start()
 	// Connect to WLAN
 	WiFi.begin("Schotsman_IOT", "pannenkoekmetkaas");
 
-	digitalWrite(GPIO_LATCH, LOW);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, TubeCharacter::dot);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, TubeCharacter::dot);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, TubeCharacter::n | TubeCharacter::dot);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, TubeCharacter::n);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, TubeCharacter::o);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, TubeCharacter::c);
-	digitalWrite(GPIO_LATCH, HIGH);
+	char data[6] = {
+		TubeCharacter::dot,
+		TubeCharacter::dot,
+		TubeCharacter::n | TubeCharacter::dot,
+		TubeCharacter::n,
+		TubeCharacter::o,
+		TubeCharacter::c,
+	};
+	display->ShiftRaw(data);
+
 	while (WiFi.status() != WL_CONNECTED) 
 		delay(100);
 
@@ -42,25 +44,12 @@ void DeviceModeNormal::OnTick()
 	int minute = timeClient->getMinutes();
 	int second = timeClient->getSeconds();
 
-	if (minute == 30 && second == 0) 
+	if (second == 0) 
 	{
 		Serial.println("Attempting to sync with NTP...");
 		timeClient->update();
 	}
 
-    ShiftCurrentTime(hour, minute, second);
-
+	display->ShiftCurrentTime(hour, minute, second);
     delay(delayBetweenTicks);
-}
-
-void DeviceModeNormal::ShiftCurrentTime(int hour, int minute, int second)
-{
-	digitalWrite(GPIO_LATCH, LOW);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, TubeDigit[second % 10]);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, TubeDigit[second / 10]);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, TubeDigit[minute % 10] | TubeCharacter::dot);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, TubeDigit[minute / 10]);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, TubeDigit[hour % 10] | TubeCharacter::dot);
-	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, TubeDigit[hour / 10]);
-	digitalWrite(GPIO_LATCH, HIGH);
 }

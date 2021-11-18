@@ -7,6 +7,13 @@
 	- https://github.com/witnessmenow/spotify-api-arduino
 */
 
+#define DISPLAYTYPE_IV6
+
+#ifdef DISPLAYTYPE_IV6
+#include "DisplayIV6.h"
+DisplayIV6 display;
+#endif //DISPLAYTYPE_IV6
+
 #include <ESP8266mDNS.h>
 #include <ESP8266WebServer.h> 
 
@@ -26,18 +33,13 @@ void handleRoot()
 
 void setup()
 {
-	pinMode(GPIO_DATA, OUTPUT);
-	pinMode(GPIO_CLOCK, OUTPUT);
-	pinMode(GPIO_LATCH, OUTPUT);
-
-	digitalWrite(GPIO_DATA, LOW);
-	digitalWrite(GPIO_CLOCK, LOW);
-	digitalWrite(GPIO_LATCH, HIGH);
-
-	Serial.begin(115200);
+	Serial.begin(115200);	
 	Serial.println("Phalanx is initializing...");
 
+	display.Initialize();
+
 	deviceMode = new DeviceModeNormal();
+	deviceMode->SetDisplay(&display);
 	doLoop = deviceMode->Start();
 
 	MDNS.begin("Phalanx");
@@ -62,6 +64,4 @@ void loop()
 
 	if(deviceMode != nullptr)
 		deviceMode->OnTick();
-
-	delay(1);
 }
