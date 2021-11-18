@@ -38,25 +38,23 @@ bool DeviceModeNormal::Stop()
 
 void DeviceModeNormal::OnTick()
 {
-	if (timeSinceLastNTPUpdate >= delayBetweenNTPUpdates) 
-	{
-		Serial.println("Attempting to update NTP time.");
-    	timeClient->update();
-		timeSinceLastNTPUpdate = 0;
-	}
-
-    ShiftCurrentTime();
-
-    delay(delayBetweenTicks);
-	timeSinceLastNTPUpdate += delayBetweenTicks;
-}
-
-void DeviceModeNormal::ShiftCurrentTime()
-{
     int hour = timeClient->getHours();
 	int minute = timeClient->getMinutes();
 	int second = timeClient->getSeconds();
 
+	if (minute == 30 && second == 0) 
+	{
+		Serial.println("Attempting to sync with NTP...");
+		timeClient->update();
+	}
+
+    ShiftCurrentTime(hour, minute, second);
+
+    delay(delayBetweenTicks);
+}
+
+void DeviceModeNormal::ShiftCurrentTime(int hour, int minute, int second)
+{
 	digitalWrite(GPIO_LATCH, LOW);
 	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, TubeDigit[second % 10]);
 	shiftOut(GPIO_DATA, GPIO_CLOCK, MSBFIRST, TubeDigit[second / 10]);

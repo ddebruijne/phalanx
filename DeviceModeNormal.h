@@ -8,14 +8,12 @@ class DeviceModeNormal : public DeviceMode
     WiFiUDP ntpUDP;
     NTPClient* timeClient;
 
-    const uint8_t delayBetweenTicks = 100;
-    const uint8_t delayBetweenNTPUpdates = 30000;
-    uint8_t timeSinceLastNTPUpdate = 0;
+    const uint8_t delayBetweenTicks = 100;  // 1/10th of a second
 
 public:
     bool Start();
     bool Stop();
     void OnTick();
 
-    void ShiftCurrentTime();
+    void ShiftCurrentTime(int hour, int minute, int second);
 };
