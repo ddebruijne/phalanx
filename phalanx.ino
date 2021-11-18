@@ -9,9 +9,6 @@
 */
 
 /* Todo:
-	- configuring settings from webpage
-	- Toggling from config mode -> normal mode if no wifi is defined
-	- Toggling from normal mode -> config mode if can't connect to saved wifi
 	- brightness controls
 	- defining & writing string to display
 	- date display (at 30s)
@@ -21,6 +18,7 @@
 */
 
 #define DISPLAYTYPE_IV6
+#define PORT 80
 
 #ifdef DISPLAYTYPE_IV6
 #include "DisplayIV6.h"
@@ -38,12 +36,41 @@ DisplayIV6 display;
 #include "DeviceModeNormal.h"
 
 DeviceMode *deviceMode;
-ESP8266WebServer webServer(80);
+ESP8266WebServer webServer(PORT);
+EEPROMData saveData;
 bool doLoop = false;
 
 void handleRoot()
 {
-	webServer.send(200, "text/plain", "Hello world!");
+	String str = "<!DOCTYPE html><html><head><title>Phalanx</title></head>";
+	str += "<body><h1>Phalanx Config</h1>";
+	str += "Current Connection Status: ";
+	str += WifiStatusCode[WiFi.status()];
+	str += "</p><form action=\"/save\" method=\"POST\"><input type=\"text\" name=\"ssid\" maxLength=32 placeholder=\"WiFi SSID\" value=\"";
+	str += String(saveData.wifi_ssid);
+	str += "\"></br><input type=\"text\" name=\"password\" maxLength=32 placeholder=\"WiFi Passphrase\" value=\"";
+	str += String(saveData.wifi_pass);
+	str += "\"></br><input type=\"submit\" value=\"Save\"></form><br/><br/>";
+	str += "</body></html>";
+
+	webServer.send(200, "text/html", str.c_str());
+}
+
+void handleSave()
+{
+	if (webServer.hasArg("ssid") && !webServer.arg("ssid").isEmpty())
+		strncpy(saveData.wifi_ssid, webServer.arg("ssid").c_str(), 32);
+
+	if (webServer.hasArg("password"))
+		strncpy(saveData.wifi_pass, webServer.arg("password").c_str(), 32);
+
+	Serial.printf("Saved data: ssid:%s / pw:%s\n", saveData.wifi_ssid, saveData.wifi_pass);
+	saveData.initialized = true;
+	EEPROM.put(0, saveData);
+	EEPROM.commit();
+
+	webServer.sendHeader("Location","/"); 
+	webServer.send(303);  
 }
 
 void setup()
@@ -54,32 +81,63 @@ void setup()
 	display.Initialize();
 
 	EEPROM.begin(sizeof(EEPROMData));
-	EEPROMData saveData;
 	EEPROM.get(0, saveData);
 
 	if (saveData.initialized == false)
-	{
 		deviceMode = new DeviceModeConfig();
-	}
 	else
 	{
-		//TODO check whether we can connect to WLAN before we enable normal device mode.
-		//TODO pull out WLAN connection and handle it here
-		deviceMode = new DeviceModeNormal();
+		char data[6] = {
+			TubeCharacter::dot,
+			TubeCharacter::dot,
+			TubeCharacter::n | TubeCharacter::dot,
+			TubeCharacter::n,
+			TubeCharacter::o,
+			TubeCharacter::c,
+		};
+		display.ShiftRaw(data);
+
+		bool success = attemptConnectWLAN();
+		if (!success)
+			deviceMode = new DeviceModeConfig();
+		else
+			deviceMode = new DeviceModeNormal();
 	}
 
 	deviceMode->SetDisplay(&display);
 	doLoop = deviceMode->Start();
 
-	MDNS.begin("phalanx");
+	MDNS.begin("Phalanx");
 
-	webServer.on("/", handleRoot);
+	webServer.on("/", HTTP_GET, handleRoot);
+	webServer.on("/save", HTTP_POST, handleSave);
 	webServer.onNotFound([](){
 		webServer.send(404, "text/plain", "404: Not found");
 	});
 	webServer.begin();
 
+	MDNS.addService("http", "tcp", PORT);
+
 	Serial.println("Phalanx Initialized!");
+}
+
+bool attemptConnectWLAN()
+{
+	WiFi.begin(String(saveData.wifi_ssid), String(saveData.wifi_pass));
+	uint8_t timeOutSeconds = 10;
+	uint8_t currentTimeOutSeconds = 0;
+
+	// Waits for 10 seconds or until the device is connected.
+	while (WiFi.status() != WL_CONNECTED)
+	{
+		delay(1000);
+		currentTimeOutSeconds++;
+
+		if (currentTimeOutSeconds >= timeOutSeconds)
+			break;
+	}
+
+	return WiFi.status() == WL_CONNECTED;
 }
 
 void loop()

@@ -1,6 +1,18 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
+static String WifiStatusCode[8]
+{
+    String("Idle"),
+    String("SSID Can't be reached"),
+    String(""),
+    String("Connected Successfully"),
+    String("Connection Failed."),
+    String(""),
+    String("Wrong Password"),
+    String("Not connected.")
+};
+
 //TODO: move to DisplayIV6
 class TubeCharacter
 {
