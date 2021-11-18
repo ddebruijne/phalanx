@@ -40,16 +40,13 @@ bool DeviceModeNormal::Stop()
 
 void DeviceModeNormal::OnTick()
 {
-    int hour = timeClient->getHours();
-	int minute = timeClient->getMinutes();
 	int second = timeClient->getSeconds();
-
-	if (second == 0) 
+	if (second == 30) 
 	{
 		Serial.println("Attempting to sync with NTP...");
 		timeClient->update();
 	}
 
-	display->ShiftCurrentTime(hour, minute, second);
+	display->ShiftCurrentTime(timeClient->getHours(), timeClient->getMinutes(), second);
     delay(delayBetweenTicks);
 }
