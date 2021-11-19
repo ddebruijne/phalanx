@@ -9,7 +9,6 @@
 */
 
 /* Todo:
-	- If using HR:MIN mode for time, alternate tubes we display on
 	- DisplayIV6: only shift if there are changes to the display. Keep what's currently on the display in RAM.
 	- Improve HTML handling, check string::replace
 	- active based on device on network.

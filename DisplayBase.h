@@ -1,9 +1,21 @@
 #ifndef DISPLAYBASE_H
 #define DISPLAYBASE_H
 
+// Time position for when we don't display seconds.
+// Rotating between these options gives the components some downtime and should extend lifetime.
+enum TimePosition {
+    Middle,
+    Left,
+    Right,
+    Split,
+    MAX
+};
+
 class DisplayBase
 {
-    const int digits = 0;
+protected:
+    const int Digits = 0;
+    TimePosition CurrentTimePosition = TimePosition::Middle;
 
 public:
     virtual bool Initialize() = 0;
