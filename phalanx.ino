@@ -126,8 +126,10 @@ void setup()
 	// Go to config mode if not initialized or wlan connection fails.
 	// If a successful internet connection is established, enable the normal device mode
 	if (saveData.initialized == false)
+	{
 		saveData = EEPROMData();
 		deviceMode = new DeviceModeConfig();
+	}
 	else
 	{
 		char data[6] = {
