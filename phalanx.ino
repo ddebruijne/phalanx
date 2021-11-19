@@ -9,7 +9,7 @@
 */
 
 /* Todo:
-	- 12h mode
+	- display seconds setting
 	- brightness controls
 	- timezone storage, DST handling
 	- date display (at 30s)
@@ -47,11 +47,14 @@ void handleRoot()
 	str += "<body><h1>Phalanx Config</h1>";
 	str += "Current Connection Status: ";
 	str += WifiStatusCode[WiFi.status()];
-	str += "</p><form action=\"/save\" method=\"POST\"><input type=\"text\" name=\"ssid\" maxLength=32 placeholder=\"WiFi SSID\" value=\"";
+	str += "<br/><form action=\"/save\" method=\"POST\">WiFi SSID: <input type=\"text\" name=\"ssid\" maxLength=32 placeholder=\"WiFi SSID\" value=\"";
 	str += String(saveData.wifi_ssid);
-	str += "\"></br><input type=\"text\" name=\"password\" maxLength=32 placeholder=\"WiFi Passphrase\" value=\"";
+	str += "\"></br>WiFi Passphrase: <input type=\"text\" name=\"password\" maxLength=32 placeholder=\"WiFi Passphrase\" value=\"";
 	str += String(saveData.wifi_pass);
-	str += "\"></br><input type=\"submit\" value=\"Save\"></form><br/><br/>";
+	str += "\"></br>12h mode: <input type=\"checkbox\" id=\"time_12hmode\" name=\"time_12hmode\" ";
+	if (saveData.time_12hmode)
+		str += "checked";
+	str += "></br></p><input type=\"submit\" value=\"Save\"></form><br/><br/>";
 	str += "</body></html>";
 
 	webServer.send(200, "text/html", str.c_str());
@@ -64,6 +67,8 @@ void handleSave()
 
 	if (webServer.hasArg("password"))
 		strncpy(saveData.wifi_pass, webServer.arg("password").c_str(), 32);
+
+	saveData.time_12hmode = webServer.hasArg("time_12hmode");
 
 	Serial.printf("Saved data: ssid:%s / pw:%s\n", saveData.wifi_ssid, saveData.wifi_pass);
 	saveData.initialized = true;
