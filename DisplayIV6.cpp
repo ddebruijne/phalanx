@@ -89,9 +89,19 @@ void DisplayIV6::ShiftCurrentTime(int hour, int minute, int second, bool display
 void DisplayIV6::ShiftRaw(char data[])
 {
 	digitalWrite(GPIO_Latch, LOW);
-    for (uint8_t i = 0; i < 6; i++)
+    for (uint8_t i = 0; i < digits; i++)
     {
         shiftOut(GPIO_Data, GPIO_Clock, MSBFIRST, data[i]);
     }
     digitalWrite(GPIO_Latch, HIGH);
+}
+
+void DisplayIV6::ShiftBlank()
+{
+   	digitalWrite(GPIO_Latch, LOW);
+    for (uint8_t i = 0; i < digits; i++)
+    {
+        shiftOut(GPIO_Data, GPIO_Clock, MSBFIRST, TubeCharacter::blank);
+    }
+    digitalWrite(GPIO_Latch, HIGH); 
 }
