@@ -9,7 +9,7 @@
 */
 
 /* Todo:
-	- display seconds setting
+	- If using HR:MIN mode for time, alternate tubes we display on
 	- brightness controls
 	- timezone storage, DST handling
 	- date display (at 30s)
@@ -47,13 +47,25 @@ void handleRoot()
 	str += "<body><h1>Phalanx Config</h1>";
 	str += "Current Connection Status: ";
 	str += WifiStatusCode[WiFi.status()];
+
 	str += "<br/><form action=\"/save\" method=\"POST\">WiFi SSID: <input type=\"text\" name=\"ssid\" maxLength=32 placeholder=\"WiFi SSID\" value=\"";
 	str += String(saveData.wifi_ssid);
+
 	str += "\"></br>WiFi Passphrase: <input type=\"text\" name=\"password\" maxLength=32 placeholder=\"WiFi Passphrase\" value=\"";
 	str += String(saveData.wifi_pass);
+
 	str += "\"></br>12h mode: <input type=\"checkbox\" id=\"time_12hmode\" name=\"time_12hmode\" ";
 	if (saveData.time_12hmode)
 		str += "checked";
+	
+	str += "></br>Display 0 when it's the first digit: <input type=\"checkbox\" id=\"time_zerofirstdigit\" name=\"time_zerofirstdigit\" ";
+	if (saveData.time_displayZeroFirstDigit)
+		str += "checked";
+	
+	str += "></br>Display seconds: <input type=\"checkbox\" id=\"time_displaySeconds\" name=\"time_displaySeconds\" ";
+	if (saveData.time_displaySeconds)
+		str += "checked";
+	
 	str += "></br></p><input type=\"submit\" value=\"Save\"></form><br/><br/>";
 	str += "</body></html>";
 
@@ -69,6 +81,8 @@ void handleSave()
 		strncpy(saveData.wifi_pass, webServer.arg("password").c_str(), 32);
 
 	saveData.time_12hmode = webServer.hasArg("time_12hmode");
+	saveData.time_displayZeroFirstDigit = webServer.hasArg("time_zerofirstdigit");
+	saveData.time_displaySeconds = webServer.hasArg("time_displaySeconds");
 
 	Serial.printf("Saved data: ssid:%s / pw:%s\n", saveData.wifi_ssid, saveData.wifi_pass);
 	saveData.initialized = true;

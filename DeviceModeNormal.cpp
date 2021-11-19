@@ -28,7 +28,10 @@ void DeviceModeNormal::OnTick()
 	if(saveData.time_12hmode && hours > 12)
 		hours -= 12;
 
-	display->ShiftCurrentTime(hours, timeClient->getMinutes(), timeClient->getSeconds());
+	if (saveData.time_displaySeconds)
+		display->ShiftCurrentTimeFull(hours, timeClient->getMinutes(), timeClient->getSeconds(), saveData.time_displayZeroFirstDigit);
+	else
+		display->ShiftCurrentTime(hours, timeClient->getMinutes(), timeClient->getSeconds(), saveData.time_displayZeroFirstDigit);
     
 	delay(delayBetweenTicks);
 	timeSinceLastSettingsSync += delayBetweenTicks;

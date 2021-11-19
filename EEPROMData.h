@@ -10,6 +10,8 @@ public:
     char wifi_ssid[32] = "";
     char wifi_pass[32] = "";
     bool time_12hmode = false;
+    bool time_displayZeroFirstDigit = true;
+    bool time_displaySeconds = true;
 };
 
 #endif // EEPROMDATA_H

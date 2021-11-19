@@ -22,6 +22,7 @@ class DisplayIV6 : public DisplayBase
 
 public:
     bool Initialize();
-    void ShiftCurrentTime(int hour, int minute, int second);
+    void ShiftCurrentTimeFull(int hour, int minute, int second, bool displayZeroFirstDigit);
+    void ShiftCurrentTime(int hour, int minute, int second, bool displayZeroFirstDigit);
     void ShiftRaw(char data[]);
 };
