@@ -21,6 +21,7 @@ void DisplayIV6::ShiftCurrentTime(int hour, int minute, int second)
 {
 	digitalWrite(GPIO_Latch, LOW);
 
+    // Second
 	shiftOut(GPIO_Data, GPIO_Clock, MSBFIRST, TubeDigit[second % 10]);
     int sec_firstDigit = second / 10;
     if (sec_firstDigit != 0) 
@@ -28,14 +29,23 @@ void DisplayIV6::ShiftCurrentTime(int hour, int minute, int second)
     else
 	    shiftOut(GPIO_Data, GPIO_Clock, MSBFIRST, TubeCharacter::blank);
 
-	shiftOut(GPIO_Data, GPIO_Clock, MSBFIRST, TubeDigit[minute % 10] | TubeCharacter::dot);
+    // Minute
+    char min_secondDigit = TubeDigit[minute % 10];
+    if (second % 2 == 0)
+        min_secondDigit = min_secondDigit | TubeCharacter::dot;
+	shiftOut(GPIO_Data, GPIO_Clock, MSBFIRST, min_secondDigit);
+
     int min_firstDigit = minute / 10;
     if (min_firstDigit != 0)
 	    shiftOut(GPIO_Data, GPIO_Clock, MSBFIRST, TubeDigit[min_firstDigit]);
     else
         shiftOut(GPIO_Data, GPIO_Clock, MSBFIRST, TubeCharacter::blank);
 
-	shiftOut(GPIO_Data, GPIO_Clock, MSBFIRST, TubeDigit[hour % 10] | TubeCharacter::dot);
+    // Hour
+    char hr_secondDigit = TubeDigit[hour % 10];
+    if (second % 2 == 0)
+        hr_secondDigit = hr_secondDigit | TubeCharacter::dot;
+	shiftOut(GPIO_Data, GPIO_Clock, MSBFIRST, hr_secondDigit);
     int hr_firstDigit = hour / 10;
     if (hr_firstDigit != 0)
 	    shiftOut(GPIO_Data, GPIO_Clock, MSBFIRST, TubeDigit[hr_firstDigit]);
