@@ -101,7 +101,7 @@ void DisplayIV6::ShiftBlank()
 
 void DisplayIV6::InternalShiftTimeComponent(int number, bool displayZeroFirstDigit, bool dotOnSecondDigit)
 {
-    if (number > 99)
+    if (number > 99 || number < 0)
         number = 0;
 
     char secondDigit = TubeDigit[number % 10];

@@ -1,24 +1,5 @@
 // Phalanx VFD Clock entrypoint
-// Copyright (c) Danny de Bruijne 2021. All rights reserved.
-
-/* Resources
-	- https://arduino-esp8266.readthedocs.io/en/latest/index.html
-	- https://tttapa.github.io/ESP8266/Chap10%20-%20Simple%20Web%20Server.html
-	- https://github.com/jwrw/ESP_EEPROM/blob/master/examples/ESP_EEPROM_Simple/ESP_EEPROM_Simple.ino
-	- https://github.com/witnessmenow/spotify-api-arduino
-*/
-
-/* Todo:
-	- DisplayIV6: only shift if there are changes to the display. Keep what's currently on the display in RAM.
-	- Improve HTML handling, check string::replace
-	- active based on device on network.
-	- brightness controls
-	- timezone storage, DST handling
-	- date display (at 30s)
-	- spotify device mode & mode switching
-	- defining & writing string to display
-	- OTA updates
-*/
+// Copyright 2021 Danny de Bruijne. Follows MIT license (see Readme)
 
 #define DISPLAYTYPE_IV6
 #define PORT 80
