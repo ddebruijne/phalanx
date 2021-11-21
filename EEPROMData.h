@@ -13,6 +13,7 @@ public:
     char wifi_pass[32] = "";
 
     // Normal/Time mode settings
+    int timeZone = 0;
     int activeHours[2] = {0, 0};
     bool time_12hmode = false;
     bool time_displayZeroFirstDigit = true;

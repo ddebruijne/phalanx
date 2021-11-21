@@ -39,7 +39,9 @@ void handleRoot()
 	str += "\"></br>WiFi Passphrase: <input type=\"text\" name=\"password\" maxLength=32 placeholder=\"WiFi Passphrase\" value=\"";
 	str += String(saveData.wifi_pass);
 
-	str += "\"></br>12h mode: <input type=\"checkbox\" id=\"time_12hmode\" name=\"time_12hmode\" ";
+	str += "\"><br/>Timezone: <select name=\"timezone\"><option value=\"0\">UTC</option><option value=\"1\">Britain, Portugal</option><option value=\"2\">Central Europe</option><option value=\"3\">Moscow</option><option value=\"4\">Australia Eastern</option><option value=\"5\">America Eastern</option></select>";
+
+	str += "</br>12h mode: <input type=\"checkbox\" id=\"time_12hmode\" name=\"time_12hmode\" ";
 	if (saveData.time_12hmode)
 		str += "checked";
 	
@@ -67,6 +69,9 @@ void handleSave()
 
 	if (webServer.hasArg("password"))
 		strncpy(saveData.wifi_pass, webServer.arg("password").c_str(), 32);
+
+	if (webServer.hasArg("timezone"))
+		saveData.timeZone = webServer.arg("timezone").toInt();
 
 	saveData.time_12hmode = webServer.hasArg("time_12hmode");
 	saveData.time_displayZeroFirstDigit = webServer.hasArg("time_zerofirstdigit");

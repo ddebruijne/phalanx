@@ -9,7 +9,6 @@ Firmware designed for projects with an ESP-M2 driving VFD or Nixie vacuum tubes
 - https://github.com/witnessmenow/spotify-api-arduino
 
 # Todo
-- timezone storage, DST handling / https://github.com/JChristensen/Timezone/blob/master/examples/WorldClock/WorldClock.ino
 - Improve HTML handling, check string::replace
 - active based on device on network. / https://github.com/dancol90/ESP8266Ping
 - brightness controls / https://learn.adafruit.com/adafruit-arduino-lesson-4-eight-leds/brightness-control

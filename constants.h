@@ -1,6 +1,46 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
+#include <Timezone.h>
+
+// Australia Eastern Time Zone (Sydney, Melbourne)
+static TimeChangeRule aEDT = {"AEDT", First, Sun, Oct, 2, 660};    // UTC + 11 hours
+static TimeChangeRule aEST = {"AEST", First, Sun, Apr, 3, 600};    // UTC + 10 hours
+static Timezone tzAusET(aEDT, aEST);
+
+// Moscow Standard Time (MSK, does not observe DST)
+static TimeChangeRule msk = {"MSK", Last, Sun, Mar, 1, 180};
+static Timezone tzMSK(msk);
+
+// Central European Time (Frankfurt, Paris)
+static TimeChangeRule CEST = {"CEST", Last, Sun, Mar, 2, 120};     // Central European Summer Time
+static TimeChangeRule CET = {"CET ", Last, Sun, Oct, 3, 60};       // Central European Standard Time
+static Timezone tzCE(CEST, CET);
+
+// United Kingdom (London, Belfast)
+static TimeChangeRule BST = {"BST", Last, Sun, Mar, 1, 60};        // British Summer Time
+static TimeChangeRule GMT = {"GMT", Last, Sun, Oct, 2, 0};         // Standard Time
+static Timezone tzUK(BST, GMT);
+
+// UTC
+static TimeChangeRule utcRule = {"UTC", Last, Sun, Mar, 1, 0};     // UTC
+static Timezone tzUTC(utcRule);
+
+// US Eastern Time Zone (New York, Detroit)
+static TimeChangeRule usEDT = {"EDT", Second, Sun, Mar, 2, -240};  // Eastern Daylight Time = UTC - 4 hours
+static TimeChangeRule usEST = {"EST", First, Sun, Nov, 2, -300};   // Eastern Standard Time = UTC - 5 hours
+static Timezone tzUsET(usEDT, usEST);
+
+static Timezone* Timezones[6] = 
+{
+    &tzUTC,
+    &tzUK,
+    &tzCE,
+    &tzMSK,
+    &tzAusET,
+    &tzUsET,
+};
+
 static String WifiStatusCode[8]
 {
     String("Idle"),

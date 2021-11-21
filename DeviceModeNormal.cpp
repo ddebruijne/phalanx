@@ -25,8 +25,11 @@ bool DeviceModeNormal::Stop()
 void DeviceModeNormal::OnTick()
 {
 	timeClient->update();
-	int hours = timeClient->getHours();
 
+	Timezone* tz = Timezones[saveData.timeZone];
+	time_t localizedTime = tz->toLocal(timeClient->getEpochTime());
+
+	int hours = hour(localizedTime);
 	if (saveData.activeHours[0] != saveData.activeHours[1] && (hours < saveData.activeHours[0] || hours >= saveData.activeHours[1]))
 	{
 		display->ShiftBlank();
@@ -38,9 +41,9 @@ void DeviceModeNormal::OnTick()
 			hours -= 12;
 
 		if (saveData.time_displaySeconds)
-			display->ShiftCurrentTimeFull(hours, timeClient->getMinutes(), timeClient->getSeconds(), saveData.time_displayZeroFirstDigit);
+			display->ShiftCurrentTimeFull(hours, minute(localizedTime), second(localizedTime), saveData.time_displayZeroFirstDigit);
 		else
-			display->ShiftCurrentTime(hours, timeClient->getMinutes(), timeClient->getSeconds(), saveData.time_displayZeroFirstDigit);
+			display->ShiftCurrentTime(hours, minute(localizedTime), second(localizedTime), saveData.time_displayZeroFirstDigit);
 	}
 
 	delay(delayBetweenTicks);
