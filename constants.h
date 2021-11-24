@@ -69,4 +69,7 @@ public:
     static const uint8_t blank = B00000000;
 };
 
+static void SetPinLow(uint8_t pin) { GPOC = (1 << pin); }
+static void SetPinHigh(uint8_t pin) { GPOS = (1 << pin); }
+
 #endif // CONSTANTS_H

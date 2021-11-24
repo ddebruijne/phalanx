@@ -25,7 +25,6 @@ DeviceMode *deviceMode;
 ESP8266WebServer webServer(PORT);
 EEPROMData saveData;
 ESP8266Timer displayTimer;
-volatile long displayTimerLastTickMillis = 0;
 bool doLoop = false;
 
 void handleRoot()
@@ -109,8 +108,7 @@ void IRAM_ATTR displayTimerHandler()
 	if (!display.RequiresTimer)
 		return;
 
-	display.OnTick(millis() - displayTimerLastTickMillis);
-	displayTimerLastTickMillis = millis();
+	display.OnTick();
 }
 
 void setup()
@@ -126,7 +124,6 @@ void setup()
 	if (display.RequiresTimer)
 	{
 		Serial.println("Display requires timer - starting...");
-		displayTimerLastTickMillis = millis();
 		displayTimer.attachInterruptInterval(display.TimerIntervalUs, displayTimerHandler);
 	}
 

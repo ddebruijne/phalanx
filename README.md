@@ -8,14 +8,25 @@ Firmware designed for projects with an ESP-M2 driving VFD or Nixie vacuum tubes
 - https://github.com/jwrw/ESP_EEPROM/blob/master/examples/ESP_EEPROM_Simple/ESP_EEPROM_Simple.ino
 - https://github.com/witnessmenow/spotify-api-arduino
 
-# Todo
-- Improve HTML handling, check string::replace
-- active based on device on network. / https://github.com/dancol90/ESP8266Ping
-- brightness controls / https://learn.adafruit.com/adafruit-arduino-lesson-4-eight-leds/brightness-control
-- date display (at 30s)
+# To Do List
+- date display (at x intervals)
 - spotify device mode & mode switching
+
+# Backlog features
 - defining & writing string to display
-- OTA updates
+- Animations
+- Active based on device on network. / https://github.com/dancol90/ESP8266Ping
+- Brightness for individual tubes, sometimes 
+- OTA Updates
+
+# Libraries
+- SPI: with transfer(data), transfer(*buf, count), transferFast(data), setDataBits(bits) functions having the IRAM_ATTR macro added for [interrupt safety (IRAM_ATTR replaces ICACHE_RAM_ATTR)](https://stackoverflow.com/questions/58113937/esp8266-arduino-why-is-it-necessary-to-add-the-icache-ram-attr-macro-to-isrs-an)
+- Timezone
+- ESP8266mDNS
+- ESP8266WebServer
+- ESP8266TimerInterrupt
+- ESP8266WiFi
+- ESP_EEPROM
 
 # MIT License
 Copyright 2021 Danny de Bruijne

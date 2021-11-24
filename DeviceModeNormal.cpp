@@ -1,5 +1,4 @@
 #include "DeviceModeNormal.h"
-#include <ESP8266WiFi.h>
 #include "constants.h"
 
 bool DeviceModeNormal::Start()

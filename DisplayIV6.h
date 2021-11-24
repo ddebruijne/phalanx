@@ -29,13 +29,13 @@ protected:
     };
 
     int lastHour = -1;
-    char displayData[6];
-    int ticksSinceLastWrite = 0;
-    int currentDimmingStep = 0;     //TODO move to EEPROMData
+    volatile char displayData[6];
+    volatile int ticksSinceLastWrite = 0;
+    int currentDimmingStep = 2;     //TODO move to EEPROMData
 
 public:
     bool Initialize();
-    void OnTick(int deltaTime);
+    void IRAM_ATTR OnTick();
     void ShiftCurrentTimeFull(int hour, int minute, int second, bool displayZeroFirstDigit);
     void ShiftCurrentTime(int hour, int minute, int second, bool displayZeroFirstDigit);
     void ShiftRaw(char data[]);

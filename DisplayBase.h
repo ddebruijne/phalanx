@@ -1,6 +1,8 @@
 #ifndef DISPLAYBASE_H
 #define DISPLAYBASE_H
 
+#include <Arduino.h>
+
 // Time position for when we don't display seconds.
 // Rotating between these options gives the components some downtime and should extend lifetime.
 enum TimePosition {
@@ -24,7 +26,7 @@ protected:
 
 public:
     virtual bool Initialize() = 0;
-    virtual void OnTick(int deltaTime) {};
+    virtual void IRAM_ATTR OnTick() {};
     virtual void ShiftCurrentTimeFull(int hour, int minute, int second, bool displayZeroFirstDigit) = 0;    // Time display as HR:MIN:SEC
     virtual void ShiftCurrentTime(int hour, int minute, int second, bool displayZeroFirstDigit) = 0;        // Time display as HR:MIN
     virtual void ShiftRaw(char data[]) = 0;

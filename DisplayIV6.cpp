@@ -9,10 +9,14 @@ bool DisplayIV6::Initialize()
 	pinMode(GPIO_Data, OUTPUT);
 	pinMode(GPIO_Clock, OUTPUT);
 	pinMode(GPIO_Latch, OUTPUT);
+    SetPinLow(GPIO_Data);
+    SetPinLow(GPIO_Clock);
+    SetPinHigh(GPIO_Latch);
 
-	digitalWrite(GPIO_Data, LOW);
-	digitalWrite(GPIO_Clock, LOW);
-	digitalWrite(GPIO_Latch, HIGH);
+    SPI.begin();
+    SPI.setDataMode(SPI_MODE0);
+    SPI.setBitOrder(MSBFIRST);
+    SPI.setClockDivider(SPI_CLOCK_DIV16);
 
     if (currentDimmingStep > MaxDimmingSteps)
         currentDimmingStep = MaxDimmingSteps;
@@ -23,9 +27,9 @@ bool DisplayIV6::Initialize()
     return true;
 }
 
-void IRAM_ATTR DisplayIV6::OnTick(int deltaTime)
+void DisplayIV6::OnTick()
 {
-    digitalWrite(GPIO_Latch, LOW);
+    SetPinLow(GPIO_Latch);
 
     //TODO don't shift blanking after 1st tick.
     //TODO if dimming step = 0 only write if new data;
@@ -33,14 +37,15 @@ void IRAM_ATTR DisplayIV6::OnTick(int deltaTime)
     if (ticksSinceLastWrite < currentDimmingStep)
     {
         for(volatile int tubeIndex = 0; tubeIndex < Digits; tubeIndex++)
-            shiftOut(GPIO_Data, GPIO_Clock, MSBFIRST, B00000000);
+            SPI.transfer(B00000000);
     }
     else
     {
         for(volatile int tubeIndex = 0; tubeIndex < Digits; tubeIndex++)
-            shiftOut(GPIO_Data, GPIO_Clock, MSBFIRST, displayData[tubeIndex]);
+            SPI.transfer(displayData[tubeIndex]);
     }
-    digitalWrite(GPIO_Latch, HIGH);
+
+    SetPinHigh(GPIO_Latch);
 
     ticksSinceLastWrite++;
     if (ticksSinceLastWrite > currentDimmingStep)
