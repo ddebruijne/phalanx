@@ -11,6 +11,7 @@ public:
     // Global settings
     char wifi_ssid[32] = "";
     char wifi_pass[32] = "";
+    int dimmingStep = 0;
 
     // Normal/Time mode settings
     int timeZone = 0;

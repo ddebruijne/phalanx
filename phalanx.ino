@@ -44,7 +44,17 @@ void handleRoot()
 	str += "\"></br>WiFi Passphrase: <input type=\"text\" name=\"password\" maxLength=32 placeholder=\"WiFi Passphrase\" value=\"";
 	str += String(saveData.wifi_pass);
 
-	str += "\"><br/>Timezone: <select name=\"timezone\"><option value=\"\">-</option><option value=\"0\">UTC</option><option value=\"1\">Britain, Portugal</option><option value=\"2\">Central Europe</option><option value=\"3\">Moscow</option><option value=\"4\">Australia Eastern</option><option value=\"5\">America Eastern</option></select>";
+	str += "\"><br/>Dimming: <select name=\"dimming\">";
+	for (int i = 0; i < display.MaxDimmingSteps; i++)
+	{
+		str += "<option value=\"" + String(i) + "\"";
+		if (saveData.dimmingStep == i)
+			str += " selected";
+		str += ">" + String(i) + "</option>";
+	}
+	str += "</select>";
+
+	str += "<br/>Timezone: <select name=\"timezone\"><option value=\"\">-</option><option value=\"0\">UTC</option><option value=\"1\">Britain, Portugal</option><option value=\"2\">Central Europe</option><option value=\"3\">Moscow</option><option value=\"4\">Australia Eastern</option><option value=\"5\">America Eastern</option></select>";
 
 	str += "</br>12h mode: <input type=\"checkbox\" id=\"time_12hmode\" name=\"time_12hmode\" ";
 	if (saveData.time_12hmode)
@@ -75,6 +85,9 @@ void handleSave()
 	if (webServer.hasArg("password"))
 		strncpy(saveData.wifi_pass, webServer.arg("password").c_str(), 32);
 
+	if (webServer.hasArg("dimming") && !webServer.arg("dimming").isEmpty())
+		saveData.dimmingStep = webServer.arg("dimming").toInt();
+
 	if (webServer.hasArg("timezone") && !webServer.arg("timezone").isEmpty())
 		saveData.timeZone = webServer.arg("timezone").toInt();
 
@@ -99,6 +112,8 @@ void handleSave()
 	EEPROM.put(0, saveData);
 	EEPROM.commit();
 
+	display.SetDimmingStep(saveData.dimmingStep);
+
 	webServer.sendHeader("Location","/"); 
 	webServer.send(303);
 }
@@ -119,17 +134,18 @@ void setup()
 
 	Serial.println("Phalanx is initializing...");
 
+	// Load storage
+	EEPROM.begin(sizeof(EEPROMData));
+	EEPROM.get(0, saveData);
+
 	// Initialize display & display timer
+	display.SetDimmingStep(saveData.dimmingStep);
 	display.Initialize();
 	if (display.RequiresTimer)
 	{
 		Serial.println("Display requires timer - starting...");
 		displayTimer.attachInterruptInterval(display.TimerIntervalUs, displayTimerHandler);
 	}
-
-	// Load storage
-	EEPROM.begin(sizeof(EEPROMData));
-	EEPROM.get(0, saveData);
 
 	// Determine device mode and start it.
 	// Go to config mode if not initialized or wlan connection fails.

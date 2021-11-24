@@ -5,8 +5,6 @@ class DisplayIV6 : public DisplayBase
 {
 public:
     const bool RequiresTimer = true;
-    const int TimerIntervalUs = 200;
-    const int MaxDimmingSteps = 8;
 
 protected:
     const int Digits = 6;
@@ -30,8 +28,6 @@ protected:
 
     int lastHour = -1;
     volatile char displayData[6];
-    volatile int ticksSinceLastWrite = 0;
-    int currentDimmingStep = 2;     //TODO move to EEPROMData
 
 public:
     bool Initialize();

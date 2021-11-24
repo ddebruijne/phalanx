@@ -18,11 +18,13 @@ class DisplayBase
 public:
     const bool RequiresTimer = false;
     const int TimerIntervalUs = 200;
-    const int MaxDimmingSteps = 10;
+    const int MaxDimmingSteps = 8;
 
 protected:
     const int Digits = 0;
     TimePosition currentTimePosition = TimePosition::Middle;    // for when there's less numbers on screen than there are tubes.
+    volatile int currentDimmingStep = 2;
+    volatile int ticksSinceLastWrite = 0;
 
 public:
     virtual bool Initialize() = 0;
@@ -31,6 +33,7 @@ public:
     virtual void ShiftCurrentTime(int hour, int minute, int second, bool displayZeroFirstDigit) = 0;        // Time display as HR:MIN
     virtual void ShiftRaw(char data[]) = 0;
     virtual void ShiftBlank() = 0;
+    virtual void SetDimmingStep(int value) { currentDimmingStep = value; }
 };
  
 
