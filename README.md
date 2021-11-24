@@ -11,6 +11,7 @@ Firmware designed for projects with an ESP-M2 driving VFD or Nixie vacuum tubes
 # To Do List
 - date display (at x intervals)
 - spotify device mode & mode switching
+- Take another look at DisplayIV6::OnTick - can we avoid unneccessary shifting on full brightness for example?
 
 # Backlog features
 - defining & writing string to display

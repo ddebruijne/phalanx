@@ -27,6 +27,7 @@ protected:
     };
 
     int lastHour = -1;
+    int shiftOutIndex = 0;
     volatile char displayData[6];
 
 public:
@@ -39,4 +40,5 @@ public:
 
 private:
     void InternalShiftTimeComponent(int number, bool displayZeroFirstDigit, bool dotOnSecondDigit);
+    void InternalShiftOut(char data);   // emulates shiftOut() with shiftOutIndex on displayData.
 };
