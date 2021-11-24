@@ -3,7 +3,14 @@
 
 class DisplayIV6 : public DisplayBase
 {
+public:
+    const bool RequiresTimer = true;
+    const int TimerIntervalUs = 200;
+    const int MaxDimmingSteps = 8;
+
+protected:
     const int Digits = 6;
+
     const int GPIO_Data = 13;
     const int GPIO_Clock = 14;
     const int GPIO_Latch = 15;
@@ -22,9 +29,13 @@ class DisplayIV6 : public DisplayBase
     };
 
     int lastHour = -1;
+    char displayData[6];
+    int ticksSinceLastWrite = 0;
+    int currentDimmingStep = 0;     //TODO move to EEPROMData
 
 public:
     bool Initialize();
+    void OnTick(int deltaTime);
     void ShiftCurrentTimeFull(int hour, int minute, int second, bool displayZeroFirstDigit);
     void ShiftCurrentTime(int hour, int minute, int second, bool displayZeroFirstDigit);
     void ShiftRaw(char data[]);

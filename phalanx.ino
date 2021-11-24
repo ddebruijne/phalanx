@@ -3,6 +3,7 @@
 
 #define DISPLAYTYPE_IV6
 #define PORT 80
+#define _TIMERINTERRUPT_LOGLEVEL_     0
 
 #ifdef DISPLAYTYPE_IV6
 #include "DisplayIV6.h"
@@ -12,6 +13,7 @@ DisplayIV6 display;
 #include <ESP8266mDNS.h>
 #include <ESP8266WebServer.h> 
 #include <ESP_EEPROM.h>
+#include <ESP8266TimerInterrupt.h>
 
 #include "EEPROMData.h"
 #include "constants.h"
@@ -22,10 +24,13 @@ DisplayIV6 display;
 DeviceMode *deviceMode;
 ESP8266WebServer webServer(PORT);
 EEPROMData saveData;
+ESP8266Timer displayTimer;
+volatile long displayTimerLastTickMillis = 0;
 bool doLoop = false;
 
 void handleRoot()
 {
+	EEPROM.get(0, saveData);
 	String hourDropdown = "<option value=\"\">-</option><option value = \"0\">0</option><option value = \"1\">1</option><option value = \"2\">2</option><option value = \"3\">3</option><option value = \"4\">4</option><option value = \"5\">5</option><option value = \"6\">6</option><option value = \"7\">7</option><option value = \"8\">8</option><option value = \"9\">9</option><option value = \"10\">10</option><option value = \"11\">11</option><option value = \"12\">13</option><option value = \"14\">14</option><option value = \"15\">15</option><option value = \"16\">16</option><option value = \"17\">17</option><option value = \"18\">18</option><option value = \"19\">19</option><option value = \"20\">20</option><option value = \"21\">21</option><option value = \"22\">22</option><option value = \"23\">23</option><option value = \"24\">24</option>";
 
 	String str = "<!DOCTYPE html><html><head><title>Phalanx</title></head>";
@@ -99,12 +104,33 @@ void handleSave()
 	webServer.send(303);
 }
 
+void IRAM_ATTR displayTimerHandler()
+{
+	if (!display.RequiresTimer)
+		return;
+
+	display.OnTick(millis() - displayTimerLastTickMillis);
+	displayTimerLastTickMillis = millis();
+}
+
 void setup()
 {
-	Serial.begin(115200);	
+	Serial.begin(115200);
+	while (!Serial) 
+		return;
+
 	Serial.println("Phalanx is initializing...");
 
+	// Initialize display & display timer
 	display.Initialize();
+	if (display.RequiresTimer)
+	{
+		Serial.println("Display requires timer - starting...");
+		displayTimerLastTickMillis = millis();
+		displayTimer.attachInterruptInterval(display.TimerIntervalUs, displayTimerHandler);
+	}
+
+	// Load storage
 	EEPROM.begin(sizeof(EEPROMData));
 	EEPROM.get(0, saveData);
 

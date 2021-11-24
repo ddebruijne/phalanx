@@ -14,18 +14,52 @@ bool DisplayIV6::Initialize()
 	digitalWrite(GPIO_Clock, LOW);
 	digitalWrite(GPIO_Latch, HIGH);
 
+    if (currentDimmingStep > MaxDimmingSteps)
+        currentDimmingStep = MaxDimmingSteps;
+
+    for(int tubeIndex = 0; tubeIndex < Digits; tubeIndex++)
+        displayData[tubeIndex] = B11111110;
+
     return true;
+}
+
+void IRAM_ATTR DisplayIV6::OnTick(int deltaTime)
+{
+    digitalWrite(GPIO_Latch, LOW);
+
+    //TODO don't shift blanking after 1st tick.
+    //TODO if dimming step = 0 only write if new data;
+    //TODO if dimming step = max dimming step then treat as off.
+    if (ticksSinceLastWrite < currentDimmingStep)
+    {
+        for(volatile int tubeIndex = 0; tubeIndex < Digits; tubeIndex++)
+            shiftOut(GPIO_Data, GPIO_Clock, MSBFIRST, B00000000);
+    }
+    else
+    {
+        for(volatile int tubeIndex = 0; tubeIndex < Digits; tubeIndex++)
+            shiftOut(GPIO_Data, GPIO_Clock, MSBFIRST, displayData[tubeIndex]);
+    }
+    digitalWrite(GPIO_Latch, HIGH);
+
+    ticksSinceLastWrite++;
+    if (ticksSinceLastWrite > currentDimmingStep)
+        ticksSinceLastWrite = 0;
+
 }
 
 void DisplayIV6::ShiftCurrentTimeFull(int hour, int minute, int second, bool displayZeroFirstDigit)
 {
-	digitalWrite(GPIO_Latch, LOW);
+//  REMOVEME
+    ShiftBlank();
 
-    InternalShiftTimeComponent(second, displayZeroFirstDigit, false);
-    InternalShiftTimeComponent(minute, displayZeroFirstDigit, second % 2 != 0);
-    InternalShiftTimeComponent(hour, displayZeroFirstDigit, second % 2 == 0);
+	// digitalWrite(GPIO_Latch, LOW);
 
-	digitalWrite(GPIO_Latch, HIGH);
+    // InternalShiftTimeComponent(second, displayZeroFirstDigit, false);
+    // InternalShiftTimeComponent(minute, displayZeroFirstDigit, second % 2 != 0);
+    // InternalShiftTimeComponent(hour, displayZeroFirstDigit, second % 2 == 0);
+
+	// digitalWrite(GPIO_Latch, HIGH);
 }
 
 void DisplayIV6::ShiftCurrentTime(int hour, int minute, int second, bool displayZeroFirstDigit)
@@ -37,81 +71,92 @@ void DisplayIV6::ShiftCurrentTime(int hour, int minute, int second, bool display
     if (lastHour != hour)
     {
         lastHour = hour;
-        CurrentTimePosition = (TimePosition)((int)CurrentTimePosition + 1);
+        currentTimePosition = (TimePosition)((int)currentTimePosition + 1);
     }
 
-    if (CurrentTimePosition == TimePosition::MAX)
-        CurrentTimePosition = TimePosition::Middle;
+    if (currentTimePosition == TimePosition::MAX)
+        currentTimePosition = TimePosition::Middle;
 
+//  REMOVEME
+    ShiftBlank();
 
-    // Shift Minute and hour.
-	digitalWrite(GPIO_Latch, LOW);
+    // // Shift Minute and hour.
+	// digitalWrite(GPIO_Latch, LOW);
     
-    switch(CurrentTimePosition)
-    {
-        default:
-        case TimePosition::Middle:
-            shiftOut(GPIO_Data, GPIO_Clock, MSBFIRST, TubeCharacter::blank);
-            InternalShiftTimeComponent(minute, displayZeroFirstDigit, false);
-            InternalShiftTimeComponent(hour, displayZeroFirstDigit, second % 2 == 0);
-            shiftOut(GPIO_Data, GPIO_Clock, MSBFIRST, TubeCharacter::blank);
-            break;
-        case TimePosition::Left:
-            shiftOut(GPIO_Data, GPIO_Clock, MSBFIRST, TubeCharacter::blank);
-            shiftOut(GPIO_Data, GPIO_Clock, MSBFIRST, TubeCharacter::blank);
-            InternalShiftTimeComponent(minute, displayZeroFirstDigit, false);
-            InternalShiftTimeComponent(hour, displayZeroFirstDigit, second % 2 == 0);
-            break;
-        case TimePosition::Right:
-            InternalShiftTimeComponent(minute, displayZeroFirstDigit, false);
-            InternalShiftTimeComponent(hour, displayZeroFirstDigit, second % 2 == 0);
-            shiftOut(GPIO_Data, GPIO_Clock, MSBFIRST, TubeCharacter::blank);
-            shiftOut(GPIO_Data, GPIO_Clock, MSBFIRST, TubeCharacter::blank);
-            break;
-        case TimePosition::Split:
-            InternalShiftTimeComponent(minute, displayZeroFirstDigit, false);
-            shiftOut(GPIO_Data, GPIO_Clock, MSBFIRST, TubeCharacter::blank);
-            shiftOut(GPIO_Data, GPIO_Clock, MSBFIRST, TubeCharacter::blank);
-            InternalShiftTimeComponent(hour, displayZeroFirstDigit, second % 2 == 0);
-            break;
-    }
+    // switch(currentTimePosition)
+    // {
+    //     default:
+    //     case TimePosition::Middle:
+    //         shiftOut(GPIO_Data, GPIO_Clock, MSBFIRST, TubeCharacter::blank);
+    //         InternalShiftTimeComponent(minute, displayZeroFirstDigit, false);
+    //         InternalShiftTimeComponent(hour, displayZeroFirstDigit, second % 2 == 0);
+    //         shiftOut(GPIO_Data, GPIO_Clock, MSBFIRST, TubeCharacter::blank);
+    //         break;
+    //     case TimePosition::Left:
+    //         shiftOut(GPIO_Data, GPIO_Clock, MSBFIRST, TubeCharacter::blank);
+    //         shiftOut(GPIO_Data, GPIO_Clock, MSBFIRST, TubeCharacter::blank);
+    //         InternalShiftTimeComponent(minute, displayZeroFirstDigit, false);
+    //         InternalShiftTimeComponent(hour, displayZeroFirstDigit, second % 2 == 0);
+    //         break;
+    //     case TimePosition::Right:
+    //         InternalShiftTimeComponent(minute, displayZeroFirstDigit, false);
+    //         InternalShiftTimeComponent(hour, displayZeroFirstDigit, second % 2 == 0);
+    //         shiftOut(GPIO_Data, GPIO_Clock, MSBFIRST, TubeCharacter::blank);
+    //         shiftOut(GPIO_Data, GPIO_Clock, MSBFIRST, TubeCharacter::blank);
+    //         break;
+    //     case TimePosition::Split:
+    //         InternalShiftTimeComponent(minute, displayZeroFirstDigit, false);
+    //         shiftOut(GPIO_Data, GPIO_Clock, MSBFIRST, TubeCharacter::blank);
+    //         shiftOut(GPIO_Data, GPIO_Clock, MSBFIRST, TubeCharacter::blank);
+    //         InternalShiftTimeComponent(hour, displayZeroFirstDigit, second % 2 == 0);
+    //         break;
+    // }
 
-	digitalWrite(GPIO_Latch, HIGH);
+	// digitalWrite(GPIO_Latch, HIGH);
 }
 
 void DisplayIV6::ShiftRaw(char data[])
 {
-	digitalWrite(GPIO_Latch, LOW);
     for (uint8_t i = 0; i < Digits; i++)
     {
-        shiftOut(GPIO_Data, GPIO_Clock, MSBFIRST, data[i]);
+        displayData[i] = data[i];
     }
-    digitalWrite(GPIO_Latch, HIGH);
+
+	// digitalWrite(GPIO_Latch, LOW);
+    // for (uint8_t i = 0; i < Digits; i++)
+    // {
+    //     shiftOut(GPIO_Data, GPIO_Clock, MSBFIRST, data[i]);
+    // }
+    // digitalWrite(GPIO_Latch, HIGH);
 }
 
 void DisplayIV6::ShiftBlank()
 {
-   	digitalWrite(GPIO_Latch, LOW);
-    for (uint8_t i = 0; i < Digits; i++)
-    {
-        shiftOut(GPIO_Data, GPIO_Clock, MSBFIRST, TubeCharacter::blank);
-    }
-    digitalWrite(GPIO_Latch, HIGH); 
+    for(int tubeIndex = 0; tubeIndex < Digits; tubeIndex++)
+        displayData[tubeIndex] = B11111110;
+    //TODO make B0000000
+
+   	// digitalWrite(GPIO_Latch, LOW);
+    // for (uint8_t i = 0; i < Digits; i++)
+    // {
+    //     shiftOut(GPIO_Data, GPIO_Clock, MSBFIRST, TubeCharacter::blank);
+    // }
+    // digitalWrite(GPIO_Latch, HIGH); 
 }
 
 void DisplayIV6::InternalShiftTimeComponent(int number, bool displayZeroFirstDigit, bool dotOnSecondDigit)
 {
-    if (number > 99 || number < 0)
-        number = 0;
+    // if (number > 99 || number < 0)
+    //     number = 0;
 
-    char secondDigit = TubeDigit[number % 10];
-    if (dotOnSecondDigit)
-        secondDigit = secondDigit | TubeCharacter::dot;
-	shiftOut(GPIO_Data, GPIO_Clock, MSBFIRST, secondDigit);
+    // char secondDigit = TubeDigit[number % 10];
+    // if (dotOnSecondDigit)
+    //     secondDigit = secondDigit | TubeCharacter::dot;
+	// shiftOut(GPIO_Data, GPIO_Clock, MSBFIRST, secondDigit);
 
-    int firstDigit = number / 10;
-    if (firstDigit != 0 or displayZeroFirstDigit)
-	    shiftOut(GPIO_Data, GPIO_Clock, MSBFIRST, TubeDigit[firstDigit]);
-    else
-	    shiftOut(GPIO_Data, GPIO_Clock, MSBFIRST, TubeCharacter::blank);
+    // int firstDigit = number / 10;
+    // if (firstDigit != 0 or displayZeroFirstDigit)
+	//     shiftOut(GPIO_Data, GPIO_Clock, MSBFIRST, TubeDigit[firstDigit]);
+    // else
+	//     shiftOut(GPIO_Data, GPIO_Clock, MSBFIRST, TubeCharacter::blank);
 }
