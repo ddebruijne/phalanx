@@ -1,6 +1,8 @@
 # Phalanx
 Firmware designed for projects with an ESP-M2 driving VFD or Nixie vacuum tubes
 
+![VFD Tube](https://i.imgur.com/6GI5cyK.jpg)
+
 ## Implemented features
 - Configuration mode - will broadcast a WiFi network to set the device up if none is defined.
 - Support for multiple types of hardware
