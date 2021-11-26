@@ -9,14 +9,19 @@ Firmware designed for projects with an ESP-M2 driving VFD or Nixie vacuum tubes
 - https://github.com/witnessmenow/spotify-api-arduino
 
 # To Do List
-- date display (at x intervals)
-- spotify device mode & mode switching
+- device mode switching between spotify/normal
+- only start devicemode after internet connection is verified, not just network connection. (check for existing funcs, or ping 8.8.8.8)
+- rework dropdowns on webpage to show selected.
 
 # Backlog features, idea list
-- defining & writing string to display
+- spotify display time improvements, so it doesn't lag during web request.
+- DisplayBase add ShiftMusicTime to shift HHH:SS for music.
+- defining & writing text string to display
+- date display (at x intervals)
 - Animations
 - Active based on device on network. / https://github.com/dancol90/ESP8266Ping
-- Smooth fading between states.
+- Handle losing internet connection, periodically check.
+- Smooth fading between states, so numbers don't immediately transform.
 - Brightness for individual tubes, sometimes a tube is brighter than the others and this could offset it.
 - Take another look at DisplayIV6::OnTick - can we avoid unneccessary shifting on full brightness, or outside of active hours?
 - Prettier config site, or create a mobile app

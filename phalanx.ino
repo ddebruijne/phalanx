@@ -4,6 +4,7 @@
 #define DISPLAYTYPE_IV6
 #define PORT 80
 #define _TIMERINTERRUPT_LOGLEVEL_     0
+#define DEBUG 0
 
 #ifdef DISPLAYTYPE_IV6
 #include "DisplayIV6.h"
@@ -16,13 +17,15 @@ DisplayIV6 display;
 #include <ESP_EEPROM.h>
 #include <ESP8266TimerInterrupt.h>
 #include <SpotifyArduino.h>
-#include <ArduinoJson.h>
 
 #include "EEPROMData.h"
 #include "constants.h"
 #include "DeviceMode.h"
 #include "DeviceModeConfig.h"
 #include "DeviceModeNormal.h"
+#include "DeviceModeSpotify.h"
+
+const bool debug = false;
 
 DeviceMode *deviceMode;
 ESP8266WebServer webServer(PORT);
@@ -30,7 +33,7 @@ EEPROMData saveData;
 ESP8266Timer displayTimer;
 WiFiClientSecure spotifyWebClient;
 SpotifyArduino *spotify;
-bool doLoop = false;
+bool doTick = false;
 
 void handleRoot()
 {
@@ -42,8 +45,12 @@ void handleRoot()
 	str += "<body><h1>Phalanx Config</h1>";
 	str += "Current Connection Status: ";
 	str += WifiStatusCode[WiFi.status()];
-	str += "<br/>Spotify Refresh Token: ";
-	str += saveData.spotifyRefreshToken;
+
+	if(debug)
+	{
+		str += "<br/>Spotify Refresh Token: ";
+		str += saveData.spotifyRefreshToken;
+	}
 
 	str += "<br/><br/><form action=\"/save\" method=\"POST\">WiFi SSID: <input type=\"text\" name=\"ssid\" maxLength=32 placeholder=\"WiFi SSID\" value=\"";
 	str += String(saveData.wifi_ssid);
@@ -83,7 +90,7 @@ void handleRoot()
 	if (deviceMode->GetDeviceMode() != EDeviceMode::Config)
 	{
 		String authUri;
-		SpotifyConstants::GetAuthUri(authUri);
+		SpotifyApiConstants::GetAuthUri(authUri);
 		str += "<a href=\"" + authUri + "\">Attempt Spotify Auth</a>";
 	}
 
@@ -138,7 +145,7 @@ void handleSpotifyAuth()
 	const char *refreshToken = NULL;
 	for (uint8_t i = 0; i < webServer.args(); i++)
 		if (webServer.argName(i) == "code")
-			refreshToken = spotify->requestAccessTokens(webServer.arg(i).c_str(), SpotifyConstants::CallbackUri);	// yeah, this actually returns the refresh token!
+			refreshToken = spotify->requestAccessTokens(webServer.arg(i).c_str(), SpotifyApiConstants::CallbackUri);	// yeah, this actually returns the refresh token!
 
 	if (refreshToken == NULL)
 	{
@@ -146,7 +153,7 @@ void handleSpotifyAuth()
 		return;
 	}
 
-	strncpy(saveData.spotifyRefreshToken, refreshToken, 150);
+	strcpy(saveData.spotifyRefreshToken, refreshToken);
 	saveData.initialized = true;
 	EEPROM.put(0, saveData);
 	EEPROM.commit();
@@ -211,14 +218,14 @@ void setup()
 			deviceMode = new DeviceModeNormal();
 
 		spotifyWebClient.setFingerprint(SPOTIFY_FINGERPRINT);
-		if (!strcmp(saveData.spotifyRefreshToken, ""))
+		if (strlen(saveData.spotifyRefreshToken) > 5)
 			spotify = new SpotifyArduino(spotifyWebClient, SpotifyClientId, SpotifyClientSecret, saveData.spotifyRefreshToken);
 		else
 			spotify = new SpotifyArduino(spotifyWebClient, SpotifyClientId, SpotifyClientSecret);
 	}
 
 	deviceMode->SetDisplay(&display);
-	doLoop = deviceMode->Start();
+	doTick = deviceMode->Start();
 
 	// Setup network presentation and web server.
 	MDNS.begin("Phalanx");
@@ -255,15 +262,43 @@ bool attemptConnectWLAN()
 	return WiFi.status() == WL_CONNECTED;
 }
 
+void toggleDeviceMode()
+{
+	EDeviceMode oldDeviceMode = deviceMode->GetDeviceMode();
+	doTick = false;
+	deviceMode->Stop();
+	delete deviceMode;
+
+	switch(oldDeviceMode)
+	{
+		default:
+		case EDeviceMode::Normal:
+		{
+			deviceMode = new DeviceModeSpotify();
+			DeviceModeSpotify* dms = (DeviceModeSpotify*)deviceMode;
+			dms->spotify = spotify;
+			break;
+		}
+		case EDeviceMode::Spotify:
+		{
+			deviceMode = new DeviceModeNormal();
+			break;
+		}
+	}
+
+	deviceMode->SetDisplay(&display);
+	doTick = deviceMode->Start();
+}
+
 void loop()
 {
-	if(!doLoop) {
+	MDNS.update();
+	webServer.handleClient();
+
+	if(!doTick) {
 		delay(1);
 		return;
 	}
-
-	MDNS.update();
-	webServer.handleClient();
 
 	if(deviceMode != nullptr)
 		deviceMode->OnTick();

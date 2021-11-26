@@ -54,12 +54,11 @@ static String WifiStatusCode[8]
     String("Not connected.")
 };
 
-class SpotifyConstants 
+class SpotifyApiConstants 
 {
 public:  
     static constexpr char SpotifyScope[] = "user-read-playback-state";
     static constexpr char CallbackUri[] = "http%3A%2F%2Fphalanx.local%2FSpotifyCallback";
-    static const int DelayBetweenRequests = 60000; // 1 minute in ms
 
     static void GetAuthUri(String& str)
     {
