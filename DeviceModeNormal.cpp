@@ -25,7 +25,7 @@ void DeviceModeNormal::OnTick()
 {
 	timeClient->update();
 
-	Timezone* tz = Timezones[saveData.timeZone];
+	Timezone* tz = Timezones[saveData.timeZone].timezone;
 	time_t localizedTime = tz->toLocal(timeClient->getEpochTime());
 
 	int hours = hour(localizedTime);

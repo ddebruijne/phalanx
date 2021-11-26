@@ -10,7 +10,6 @@ Firmware designed for projects with an ESP-M2 driving VFD or Nixie vacuum tubes
 
 # To Do List
 - only start devicemode after internet connection is verified, not just network connection. (check for existing funcs, or ping 8.8.8.8)
-- rework dropdowns on webpage to show selected.
 
 # Backlog features, idea list
 - spotify display time improvements, so it doesn't lag during web request.
@@ -25,6 +24,9 @@ Firmware designed for projects with an ESP-M2 driving VFD or Nixie vacuum tubes
 - Take another look at DisplayIV6::OnTick - can we avoid unneccessary shifting on full brightness, or outside of active hours?
 - Prettier config site, or create a mobile app
 - OTA Updates
+
+# Bugs
+- Seems to be an occasional reset, something with hw interrupt?
 
 # Libraries
 - SPI: with transfer(data), transfer(*buf, count), transferFast(data), setDataBits(bits) functions having the IRAM_ATTR macro added for [interrupt safety (IRAM_ATTR replaces ICACHE_RAM_ATTR)](https://stackoverflow.com/questions/58113937/esp8266-arduino-why-is-it-necessary-to-add-the-icache-ram-attr-macro-to-isrs-an)

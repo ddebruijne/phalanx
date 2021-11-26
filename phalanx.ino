@@ -33,13 +33,24 @@ WiFiClientSecure spotifyWebClient;
 SpotifyArduino *spotify;
 bool doTick = false;
 
+String generateHourDropdownOptions(int selected)
+{
+	String result;
+	for (int i = 0; i <= 24; i++)
+	{
+		result += "<option value=\"" + String(i) + "\"";
+		if (selected == i)
+			result += " selected";
+		result += ">" + String(i) + "</option>";
+	}
+	return result;
+}
+
 void handleRoot()
 {
 	EEPROM.get(0, saveData);
-	String hourDropdown = "<option value=\"\">-</option><option value = \"0\">0</option><option value = \"1\">1</option><option value = \"2\">2</option><option value = \"3\">3</option><option value = \"4\">4</option><option value = \"5\">5</option><option value = \"6\">6</option><option value = \"7\">7</option><option value = \"8\">8</option><option value = \"9\">9</option><option value = \"10\">10</option><option value = \"11\">11</option><option value = \"12\">13</option><option value = \"14\">14</option><option value = \"15\">15</option><option value = \"16\">16</option><option value = \"17\">17</option><option value = \"18\">18</option><option value = \"19\">19</option><option value = \"20\">20</option><option value = \"21\">21</option><option value = \"22\">22</option><option value = \"23\">23</option><option value = \"24\">24</option>";
-
 	String str = "<!DOCTYPE html><html><head><title>Phalanx</title><style>body {font: normal 12px Verdana, Arial, sans-serif;}</style></head>";
-	str.reserve(3500);	//3.5kb
+	str.reserve(4000);	//4kb
 	str += "<body><h1>Phalanx Config</h1>";
 	str += "Current Connection Status: ";
 	str += WifiStatusCode[WiFi.status()];
@@ -68,9 +79,17 @@ void handleRoot()
 	str += "</select><br/>";
 
 	str += "<h2>Time Settings</h2>";
-	str += "Timezone: <select name=\"timezone\"><option value=\"\">-</option><option value=\"0\">UTC</option><option value=\"1\">Britain, Portugal</option><option value=\"2\">Central Europe</option><option value=\"3\">Moscow</option><option value=\"4\">Australia Eastern</option><option value=\"5\">America Eastern</option></select>";
+	str += "Timezone: <select name=\"timezone\">";
+	for (int i = 0; i < AmountTimezones; i++)
+	{
+		str += "<option value=\"" + String(i) + "\"";
+		if (saveData.timeZone == i)
+			str += " selected";
+		str += ">" + String(Timezones[i].Name) + "</option>";
+	}
+	str += "</select><br/>";
 
-	str += "</br>12h mode: <input type=\"checkbox\" id=\"time_12hmode\" name=\"time_12hmode\" ";
+	str += "12h mode: <input type=\"checkbox\" id=\"time_12hmode\" name=\"time_12hmode\" ";
 	if (saveData.time_12hmode)
 		str += "checked";
 	
@@ -82,8 +101,8 @@ void handleRoot()
 	if (saveData.time_displaySeconds)
 		str += "checked";
 
-	str += "><br>Active Hours: <select name=\"activehrs_begin\">" + hourDropdown + "</select><select name=\"activehrs_end\">" + hourDropdown + "</select>";
-	str += " Set to: " + String(saveData.activeHours[0]) + "-" + String(saveData.activeHours[1]) + ". Equal numbers mean always active.";
+	str += "><br>Active Hours: <select name=\"activehrs_begin\">" + generateHourDropdownOptions(saveData.activeHours[0]) + "</select><select name=\"activehrs_end\">" + generateHourDropdownOptions(saveData.activeHours[1]) + "</select>";
+	str += " - Equal numbers mean always visible. Don't use this for tube preservation, they are always powered.";
 
 	str += "<br/><br/><input type=\"submit\" value=\"Save\"></form><br/><br/><br/>";
 

@@ -32,14 +32,21 @@ static TimeChangeRule usEDT = {"EDT", Second, Sun, Mar, 2, -240};  // Eastern Da
 static TimeChangeRule usEST = {"EST", First, Sun, Nov, 2, -300};   // Eastern Standard Time = UTC - 5 hours
 static Timezone tzUsET(usEDT, usEST);
 
-static Timezone* Timezones[6] = 
+struct TimezoneSetting {
+public:
+    Timezone* timezone;
+    String Name;
+};
+
+const int AmountTimezones = 6;
+static TimezoneSetting Timezones[AmountTimezones] = 
 {
-    &tzUTC,
-    &tzUK,
-    &tzCE,
-    &tzMSK,
-    &tzAusET,
-    &tzUsET,
+    { &tzUTC, String("UTC") },
+    { &tzUK, String("Britain, Portugal") },
+    { &tzCE, String("Central Europe") },
+    { &tzMSK, String("Moscow") },
+    { &tzAusET, String("Australia Eastern") },
+    { &tzUsET, String("US Eastern") },
 };
 
 static String WifiStatusCode[8]
