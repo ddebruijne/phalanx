@@ -35,6 +35,7 @@ Firmware designed for projects with an ESP-M2 driving VFD or Nixie vacuum tubes
 - ESP8266TimerInterrupt
 - ESP8266WiFi
 - ESP_EEPROM
+- SpotifyArduino
 
 # secret.h
 Is a file not included in source control to contain the following variables:

@@ -4,7 +4,7 @@
 #define DISPLAYTYPE_IV6
 #define PORT 80
 #define _TIMERINTERRUPT_LOGLEVEL_     0
-#define DEBUG 0
+#define DEBUGMODE 0
 
 #ifdef DISPLAYTYPE_IV6
 #include "DisplayIV6.h"
@@ -46,11 +46,10 @@ void handleRoot()
 	str += "Current Connection Status: ";
 	str += WifiStatusCode[WiFi.status()];
 
-	if(debug)
-	{
-		str += "<br/>Spotify Refresh Token: ";
-		str += saveData.spotifyRefreshToken;
-	}
+#if DEBUGMODE != 0
+	str += "<br/>Spotify Refresh Token: ";
+	str += saveData.spotifyRefreshToken;
+#endif
 
 	str += "<br/><br/><form action=\"/save\" method=\"POST\">WiFi SSID: <input type=\"text\" name=\"ssid\" maxLength=32 placeholder=\"WiFi SSID\" value=\"";
 	str += String(saveData.wifi_ssid);
