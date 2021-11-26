@@ -33,6 +33,10 @@ WiFiClientSecure spotifyWebClient;
 SpotifyArduino *spotify;
 bool doTick = false;
 
+
+/////////////////////////////////////////////////////////////////////////////
+// Web Server
+/////////////////////////////////////////////////////////////////////////////
 String generateHourDropdownOptions(int selected)
 {
 	String result;
@@ -192,6 +196,63 @@ void handleToggleMode()
 	webServer.send(303);
 }
 
+
+/////////////////////////////////////////////////////////////////////////////
+// Utility functions
+/////////////////////////////////////////////////////////////////////////////
+bool attemptConnectWLAN()
+{
+	WiFi.begin(String(saveData.wifi_ssid), String(saveData.wifi_pass));
+	uint8_t timeOutSeconds = 10;
+	uint8_t currentTimeOutSeconds = 0;
+
+	// Waits for 10 seconds or until the device is connected.
+	while (WiFi.status() != WL_CONNECTED)
+	{
+		delay(1000);
+		currentTimeOutSeconds++;
+
+		if (currentTimeOutSeconds >= timeOutSeconds)
+			break;
+	}
+
+	return WiFi.status() == WL_CONNECTED;
+}
+
+void toggleDeviceMode()
+{
+	// Destroy old mode
+	EDeviceMode oldDeviceMode = deviceMode->GetDeviceMode();
+	doTick = false;
+	deviceMode->Stop();
+	delete deviceMode;
+
+	// Create new mode
+	switch(oldDeviceMode)
+	{
+		default:
+		case EDeviceMode::Normal:
+		{
+			deviceMode = new DeviceModeSpotify();
+			DeviceModeSpotify* dms = (DeviceModeSpotify*)deviceMode;
+			dms->spotify = spotify;
+			break;
+		}
+		case EDeviceMode::Spotify:
+		{
+			deviceMode = new DeviceModeNormal();
+			break;
+		}
+	}
+
+	deviceMode->SetDisplay(&display);
+	doTick = deviceMode->Start();
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Loops
+/////////////////////////////////////////////////////////////////////////////
 void IRAM_ATTR displayTimerHandler()
 {
 	if (!display.RequiresTimer)
@@ -200,6 +261,26 @@ void IRAM_ATTR displayTimerHandler()
 	display.OnTick();
 }
 
+void loop()
+{
+	// Always update web services
+	MDNS.update();
+	webServer.handleClient();
+
+	// Device Mode Update Loop
+	if(!doTick) {
+		delay(1);
+		return;
+	}
+
+	if(deviceMode != nullptr)
+		deviceMode->OnTick();
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Entry point
+/////////////////////////////////////////////////////////////////////////////
 void setup()
 {
 	Serial.begin(115200);
@@ -272,69 +353,4 @@ void setup()
 	MDNS.addService("http", "tcp", PORT);
 
 	Serial.println("Phalanx Initialized!");
-}
-
-bool attemptConnectWLAN()
-{
-	WiFi.begin(String(saveData.wifi_ssid), String(saveData.wifi_pass));
-	uint8_t timeOutSeconds = 10;
-	uint8_t currentTimeOutSeconds = 0;
-
-	// Waits for 10 seconds or until the device is connected.
-	while (WiFi.status() != WL_CONNECTED)
-	{
-		delay(1000);
-		currentTimeOutSeconds++;
-
-		if (currentTimeOutSeconds >= timeOutSeconds)
-			break;
-	}
-
-	return WiFi.status() == WL_CONNECTED;
-}
-
-void toggleDeviceMode()
-{
-	// Destroy old mode
-	EDeviceMode oldDeviceMode = deviceMode->GetDeviceMode();
-	doTick = false;
-	deviceMode->Stop();
-	delete deviceMode;
-
-	// Create new mode
-	switch(oldDeviceMode)
-	{
-		default:
-		case EDeviceMode::Normal:
-		{
-			deviceMode = new DeviceModeSpotify();
-			DeviceModeSpotify* dms = (DeviceModeSpotify*)deviceMode;
-			dms->spotify = spotify;
-			break;
-		}
-		case EDeviceMode::Spotify:
-		{
-			deviceMode = new DeviceModeNormal();
-			break;
-		}
-	}
-
-	deviceMode->SetDisplay(&display);
-	doTick = deviceMode->Start();
-}
-
-void loop()
-{
-	// Always update web services
-	MDNS.update();
-	webServer.handleClient();
-
-	// Device Mode Update Loop
-	if(!doTick) {
-		delay(1);
-		return;
-	}
-
-	if(deviceMode != nullptr)
-		deviceMode->OnTick();
 }
