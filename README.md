@@ -9,7 +9,6 @@ Firmware designed for projects with an ESP-M2 driving VFD or Nixie vacuum tubes
 - https://github.com/witnessmenow/spotify-api-arduino
 
 # To Do List
-- device mode switching between spotify/normal
 - only start devicemode after internet connection is verified, not just network connection. (check for existing funcs, or ping 8.8.8.8)
 - rework dropdowns on webpage to show selected.
 

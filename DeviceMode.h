@@ -12,6 +12,14 @@ enum EDeviceMode
     Spotify
 };
 
+static String DeviceModeString[4]
+{
+    String("Unknown"),
+    String("Config"),
+    String("Normal"),
+    String("Spotify")
+};
+
 class DeviceMode
 {
 protected:

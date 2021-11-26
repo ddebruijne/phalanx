@@ -25,8 +25,6 @@ DisplayIV6 display;
 #include "DeviceModeNormal.h"
 #include "DeviceModeSpotify.h"
 
-const bool debug = false;
-
 DeviceMode *deviceMode;
 ESP8266WebServer webServer(PORT);
 EEPROMData saveData;
@@ -40,7 +38,7 @@ void handleRoot()
 	EEPROM.get(0, saveData);
 	String hourDropdown = "<option value=\"\">-</option><option value = \"0\">0</option><option value = \"1\">1</option><option value = \"2\">2</option><option value = \"3\">3</option><option value = \"4\">4</option><option value = \"5\">5</option><option value = \"6\">6</option><option value = \"7\">7</option><option value = \"8\">8</option><option value = \"9\">9</option><option value = \"10\">10</option><option value = \"11\">11</option><option value = \"12\">13</option><option value = \"14\">14</option><option value = \"15\">15</option><option value = \"16\">16</option><option value = \"17\">17</option><option value = \"18\">18</option><option value = \"19\">19</option><option value = \"20\">20</option><option value = \"21\">21</option><option value = \"22\">22</option><option value = \"23\">23</option><option value = \"24\">24</option>";
 
-	String str = "<!DOCTYPE html><html><head><title>Phalanx</title></head>";
+	String str = "<!DOCTYPE html><html><head><title>Phalanx</title><style>body {font: normal 12px Verdana, Arial, sans-serif;}</style></head>";
 	str.reserve(3500);	//3.5kb
 	str += "<body><h1>Phalanx Config</h1>";
 	str += "Current Connection Status: ";
@@ -51,13 +49,15 @@ void handleRoot()
 	str += saveData.spotifyRefreshToken;
 #endif
 
-	str += "<br/><br/><form action=\"/save\" method=\"POST\">WiFi SSID: <input type=\"text\" name=\"ssid\" maxLength=32 placeholder=\"WiFi SSID\" value=\"";
+	str += "<br/><h2>WiFi</h2>";
+	str += "<form action=\"/save\" method=\"POST\">WiFi SSID: <input type=\"text\" name=\"ssid\" maxLength=32 placeholder=\"WiFi SSID\" value=\"";
 	str += String(saveData.wifi_ssid);
 
-	str += "\"></br>WiFi Passphrase: <input type=\"text\" name=\"password\" maxLength=32 placeholder=\"WiFi Passphrase\" value=\"";
+	str += "\"><br/>WiFi Passphrase: <input type=\"text\" name=\"password\" maxLength=32 placeholder=\"WiFi Passphrase\" value=\"";
 	str += String(saveData.wifi_pass);
 
-	str += "\"><br/>Dimming: <select name=\"dimming\">";
+	str += "\"><br/><h2>Tube Settings</h2>";
+	str += "Dimming: <select name=\"dimming\">";
 	for (int i = 0; i < display.MaxDimmingSteps; i++)
 	{
 		str += "<option value=\"" + String(i) + "\"";
@@ -65,9 +65,10 @@ void handleRoot()
 			str += " selected";
 		str += ">" + String(i) + "</option>";
 	}
-	str += "</select>";
+	str += "</select><br/>";
 
-	str += "<br/>Timezone: <select name=\"timezone\"><option value=\"\">-</option><option value=\"0\">UTC</option><option value=\"1\">Britain, Portugal</option><option value=\"2\">Central Europe</option><option value=\"3\">Moscow</option><option value=\"4\">Australia Eastern</option><option value=\"5\">America Eastern</option></select>";
+	str += "<h2>Time Settings</h2>";
+	str += "Timezone: <select name=\"timezone\"><option value=\"\">-</option><option value=\"0\">UTC</option><option value=\"1\">Britain, Portugal</option><option value=\"2\">Central Europe</option><option value=\"3\">Moscow</option><option value=\"4\">Australia Eastern</option><option value=\"5\">America Eastern</option></select>";
 
 	str += "</br>12h mode: <input type=\"checkbox\" id=\"time_12hmode\" name=\"time_12hmode\" ";
 	if (saveData.time_12hmode)
@@ -84,13 +85,17 @@ void handleRoot()
 	str += "><br>Active Hours: <select name=\"activehrs_begin\">" + hourDropdown + "</select><select name=\"activehrs_end\">" + hourDropdown + "</select>";
 	str += " Set to: " + String(saveData.activeHours[0]) + "-" + String(saveData.activeHours[1]) + ". Equal numbers mean always active.";
 
-	str += "</br></p><input type=\"submit\" value=\"Save\"></form><br/><br/>";
+	str += "<br/><br/><input type=\"submit\" value=\"Save\"></form><br/><br/><br/>";
 
 	if (deviceMode->GetDeviceMode() != EDeviceMode::Config)
 	{
 		String authUri;
 		SpotifyApiConstants::GetAuthUri(authUri);
-		str += "<a href=\"" + authUri + "\">Attempt Spotify Auth</a>";
+		str += "<p><a href=\"" + authUri + "\">Attempt Spotify Auth</a></p>";
+
+		// We only have 2 modes, normal is the default. Don't bother switching if we don't have a refresh token.
+		if (strlen(saveData.spotifyRefreshToken) > 5)
+			str += "<p><a href=\"/toggleMode\">Toggle Device Mode</a> - Current Device Mode: " + DeviceModeString[deviceMode->GetDeviceMode()] + "</p>";
 	}
 
 	str += "</body></html>";
@@ -157,6 +162,13 @@ void handleSpotifyAuth()
 	EEPROM.put(0, saveData);
 	EEPROM.commit();
 
+	webServer.sendHeader("Location","/"); 
+	webServer.send(303);
+}
+
+void handleToggleMode()
+{
+	toggleDeviceMode();
 	webServer.sendHeader("Location","/"); 
 	webServer.send(303);
 }
@@ -232,6 +244,7 @@ void setup()
 	webServer.on("/", HTTP_GET, handleRoot);
 	webServer.on("/save", HTTP_POST, handleSave);
 	webServer.on("/SpotifyCallback", handleSpotifyAuth);
+	webServer.on("/toggleMode", handleToggleMode);
 	webServer.onNotFound([](){
 		webServer.send(404, "text/plain", "404: Not found");
 	});
@@ -263,11 +276,13 @@ bool attemptConnectWLAN()
 
 void toggleDeviceMode()
 {
+	// Destroy old mode
 	EDeviceMode oldDeviceMode = deviceMode->GetDeviceMode();
 	doTick = false;
 	deviceMode->Stop();
 	delete deviceMode;
 
+	// Create new mode
 	switch(oldDeviceMode)
 	{
 		default:
@@ -291,9 +306,11 @@ void toggleDeviceMode()
 
 void loop()
 {
+	// Always update web services
 	MDNS.update();
 	webServer.handleClient();
 
+	// Device Mode Update Loop
 	if(!doTick) {
 		delay(1);
 		return;

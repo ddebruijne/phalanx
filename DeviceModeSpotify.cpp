@@ -8,6 +8,9 @@ bool DeviceModeSpotify::Start()
         Serial.println("DeviceModeSpotify: CheckAndRefreshAccessToken failed.");
         return hasValidAccessToken;
     }
+
+    // Ensure we poll for an update immediately
+    timeSinceUpdate = timeBetweenUpdates;
 }
 
 bool DeviceModeSpotify::Stop()
@@ -18,9 +21,15 @@ bool DeviceModeSpotify::Stop()
 void DeviceModeSpotify::OnTick()
 {
     timeSinceUpdate = millis() - lastUpdatedMillis;
-    if (currentlyPlaying.isPlaying)
+
+    // Update song time
+    if (currentlyPlaying.isPlaying && currentSongTime <= currentlyPlaying.durationMs)
         currentSongTime = currentlyPlaying.progressMs + timeSinceUpdate;
 
+    if (currentSongTime > currentlyPlaying.durationMs)
+        currentSongTime = currentlyPlaying.durationMs;
+
+    // manually calculate the time in hrs, min and sec the song is playing for.
     unsigned long totalSeconds = currentSongTime / 1000;
     int hrs = totalSeconds / 3600;
     int secsRemaining = totalSeconds % 3600;
