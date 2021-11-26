@@ -10,10 +10,13 @@
 DisplayIV6 display;
 #endif //DISPLAYTYPE_IV6
 
+#include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
 #include <ESP8266WebServer.h> 
 #include <ESP_EEPROM.h>
 #include <ESP8266TimerInterrupt.h>
+#include <SpotifyArduino.h>
+#include <ArduinoJson.h>
 
 #include "EEPROMData.h"
 #include "constants.h"
@@ -25,6 +28,8 @@ DeviceMode *deviceMode;
 ESP8266WebServer webServer(PORT);
 EEPROMData saveData;
 ESP8266Timer displayTimer;
+WiFiClientSecure spotifyWebClient;
+SpotifyArduino *spotify;
 bool doLoop = false;
 
 void handleRoot()
@@ -37,6 +42,8 @@ void handleRoot()
 	str += "<body><h1>Phalanx Config</h1>";
 	str += "Current Connection Status: ";
 	str += WifiStatusCode[WiFi.status()];
+	str += "<br/>Spotify Refresh Token: ";
+	str += saveData.spotifyRefreshToken;
 
 	str += "<br/><br/><form action=\"/save\" method=\"POST\">WiFi SSID: <input type=\"text\" name=\"ssid\" maxLength=32 placeholder=\"WiFi SSID\" value=\"";
 	str += String(saveData.wifi_ssid);
@@ -72,6 +79,14 @@ void handleRoot()
 	str += " Set to: " + String(saveData.activeHours[0]) + "-" + String(saveData.activeHours[1]) + ". Equal numbers mean always active.";
 
 	str += "</br></p><input type=\"submit\" value=\"Save\"></form><br/><br/>";
+
+	if (deviceMode->GetDeviceMode() != EDeviceMode::Config)
+	{
+		String authUri;
+		SpotifyConstants::GetAuthUri(authUri);
+		str += "<a href=\"" + authUri + "\">Attempt Spotify Auth</a>";
+	}
+
 	str += "</body></html>";
 
 	webServer.send(200, "text/html", str.c_str());
@@ -113,6 +128,28 @@ void handleSave()
 	EEPROM.commit();
 
 	display.SetDimmingStep(saveData.dimmingStep);
+
+	webServer.sendHeader("Location","/"); 
+	webServer.send(303);
+}
+
+void handleSpotifyAuth()
+{
+	const char *refreshToken = NULL;
+	for (uint8_t i = 0; i < webServer.args(); i++)
+		if (webServer.argName(i) == "code")
+			refreshToken = spotify->requestAccessTokens(webServer.arg(i).c_str(), SpotifyConstants::CallbackUri);	// yeah, this actually returns the refresh token!
+
+	if (refreshToken == NULL)
+	{
+		webServer.send(404, "text/plain", "Failed to load token, check serial monitor");
+		return;
+	}
+
+	strncpy(saveData.spotifyRefreshToken, refreshToken, 150);
+	saveData.initialized = true;
+	EEPROM.put(0, saveData);
+	EEPROM.commit();
 
 	webServer.sendHeader("Location","/"); 
 	webServer.send(303);
@@ -172,6 +209,12 @@ void setup()
 			deviceMode = new DeviceModeConfig();
 		else
 			deviceMode = new DeviceModeNormal();
+
+		spotifyWebClient.setFingerprint(SPOTIFY_FINGERPRINT);
+		if (!strcmp(saveData.spotifyRefreshToken, ""))
+			spotify = new SpotifyArduino(spotifyWebClient, SpotifyClientId, SpotifyClientSecret, saveData.spotifyRefreshToken);
+		else
+			spotify = new SpotifyArduino(spotifyWebClient, SpotifyClientId, SpotifyClientSecret);
 	}
 
 	deviceMode->SetDisplay(&display);
@@ -182,6 +225,7 @@ void setup()
 
 	webServer.on("/", HTTP_GET, handleRoot);
 	webServer.on("/save", HTTP_POST, handleSave);
+	webServer.on("/SpotifyCallback", handleSpotifyAuth);
 	webServer.onNotFound([](){
 		webServer.send(404, "text/plain", "404: Not found");
 	});

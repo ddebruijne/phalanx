@@ -11,7 +11,7 @@ public:
     // Global settings
     char wifi_ssid[32] = "";
     char wifi_pass[32] = "";
-    int dimmingStep = 0;
+    int dimmingStep = 1;
 
     // Normal/Time mode settings
     int timeZone = 0;
@@ -19,6 +19,9 @@ public:
     bool time_12hmode = false;
     bool time_displayZeroFirstDigit = true;
     bool time_displaySeconds = true;
+
+    // Other
+    char spotifyRefreshToken[150] = "";
 };
 
 #endif // EEPROMDATA_H

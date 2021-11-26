@@ -31,6 +31,18 @@ Firmware designed for projects with an ESP-M2 driving VFD or Nixie vacuum tubes
 - ESP8266WiFi
 - ESP_EEPROM
 
+# secret.h
+Is a file not included in source control to contain the following variables:
+```
+#ifndef SECRET_H
+#define SECRET_H
+
+const char SpotifyClientId[] = "";
+const char SpotifyClientSecret[] = "";
+
+#endif // SECRET_H
+```
+
 # MIT License
 Copyright 2021 Danny de Bruijne
 

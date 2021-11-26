@@ -2,6 +2,7 @@
 #define CONSTANTS_H
 
 #include <Timezone.h>
+#include "Secret.h"
 
 // Australia Eastern Time Zone (Sydney, Melbourne)
 static TimeChangeRule aEDT = {"AEDT", First, Sun, Oct, 2, 660};    // UTC + 11 hours
@@ -51,6 +52,24 @@ static String WifiStatusCode[8]
     String(""),
     String("Wrong Password"),
     String("Not connected.")
+};
+
+class SpotifyConstants 
+{
+public:  
+    static constexpr char SpotifyScope[] = "user-read-playback-state";
+    static constexpr char CallbackUri[] = "http%3A%2F%2Fphalanx.local%2FSpotifyCallback";
+    static const int DelayBetweenRequests = 60000; // 1 minute in ms
+
+    static void GetAuthUri(String& str)
+    {
+        str = "https://accounts.spotify.com/authorize?client_id=";
+        str += SpotifyClientId;
+        str += "&response_type=code&redirect_uri=";
+        str += CallbackUri;
+        str += "&scope=";
+        str += SpotifyScope;
+    }
 };
 
 //TODO: move to DisplayIV6
