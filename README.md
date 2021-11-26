@@ -1,7 +1,39 @@
 # Phalanx
 Firmware designed for projects with an ESP-M2 driving VFD or Nixie vacuum tubes
 
-## Backlog features, idea list
+## Implemented features
+- Configuration mode - will broadcast a WiFi network to set the device up if none is defined.
+- Support for multiple types of hardware
+  * Currently implemented is a 6xIV-6 VFD direct drive setup.
+  * New class can be inherited from DisplayBase for other boards as desired
+- Configuration stored on-device.
+- Timezones
+- Dimming
+- Time Display
+  * 12/24h mode
+  * Toggle seconds display
+  * Toggle first zero display if first digit ("07:13:09" vs " 7:13: 9")
+  * Active Hours (tubes on between hours x and y)
+- Spotify Now Playing - Can display the progress in the song you're currently listening to
+- Live updating config (except WiFi, needs a power cycle)
+
+<br/>
+
+## Using the firmware
+1. Flash the firmware. After its done the tubes should show "CONF..."
+2. Connect to the wireless network that is set up
+3. Visit http://phalanx.local/ or http://192.168.0.1/ from your browser
+4. Enter wireless credentials and hit save
+5. Do a power cycle
+6. Phalanx will attempt to connect to your network and the internet. "CONN..." is displayed. 
+   1. If "CONF..." is displayed after a while, network or internet connection failed. Go back to step 2 or try again.
+7. Done! The current time should now be displayed.
+
+Spotify setup is only available if you are already connected to a network. <br/>Visit http://phalanx.local/ again from your network or use a networking tool like Fing to find the IP address.
+
+<br />
+
+## Backlog, idea list
 - Spotify display time improvements, so it doesn't lag during web request.
 - DisplayBase add ShiftMusicTime to shift HHH:SS for music.
 - defining & writing text string to display
@@ -15,8 +47,12 @@ Firmware designed for projects with an ESP-M2 driving VFD or Nixie vacuum tubes
 - Prettier config site, or create a mobile app
 - OTA Updates
 
+<br />
+
 ## Bugs
 - Seems to be an occasional reset, something with hw interrupt?
+
+<br />
 
 ## Libraries
 - [SPI](https://www.arduino.cc/en/Reference/SPI): with transfer(data), transfer(*buf, count), transferFast(data), setDataBits(bits) functions having the IRAM_ATTR macro added for [interrupt safety (IRAM_ATTR replaces ICACHE_RAM_ATTR)](https://stackoverflow.com/questions/58113937/esp8266-arduino-why-is-it-necessary-to-add-the-icache-ram-attr-macro-to-isrs-an)
@@ -29,10 +65,14 @@ Firmware designed for projects with an ESP-M2 driving VFD or Nixie vacuum tubes
 - [ESP_EEPROM](https://www.arduino.cc/reference/en/libraries/esp_eeprom/) / [Sample](https://github.com/jwrw/ESP_EEPROM/blob/master/examples/ESP_EEPROM_Simple/ESP_EEPROM_Simple.ino)
 - [SpotifyArduino](https://github.com/witnessmenow/spotify-api-arduino), modified getCurrentlyPlaying function to pass in CurrentlyPlaying class ref instead of callback.
 
-## Other resources
+<br />
+
+## Other resources used
 - https://arduino-esp8266.readthedocs.io/en/latest/index.html
 - https://github.com/mcer12/Flora-ESP8266
 - Various other undocumented online sources on any type of VFD project I could find.
+
+<br />
 
 ## secret.h
 Is a file not included in source control to contain the following variables:
@@ -45,6 +85,8 @@ const char SpotifyClientSecret[] = "";
 
 #endif // SECRET_H
 ```
+
+<br />
 
 # MIT License
 Copyright 2021 Danny de Bruijne
