@@ -16,6 +16,7 @@ DisplayIV6 display;
 #include <ESP8266WebServer.h> 
 #include <ESP_EEPROM.h>
 #include <ESP8266TimerInterrupt.h>
+#include <ESP8266Ping.h>
 #include <SpotifyArduino.h>
 
 #include "EEPROMData.h"
@@ -25,31 +26,18 @@ DisplayIV6 display;
 #include "DeviceModeNormal.h"
 #include "DeviceModeSpotify.h"
 
-DeviceMode *deviceMode;
+DeviceMode *deviceMode = nullptr;
 ESP8266WebServer webServer(PORT);
 EEPROMData saveData;
 ESP8266Timer displayTimer;
 WiFiClientSecure spotifyWebClient;
-SpotifyArduino *spotify;
+SpotifyArduino *spotify = nullptr;
 bool doTick = false;
-
+bool lastKnownInternetConnectedState = false;
 
 /////////////////////////////////////////////////////////////////////////////
-// Web Server
+// Events
 /////////////////////////////////////////////////////////////////////////////
-String generateHourDropdownOptions(int selected)
-{
-	String result;
-	for (int i = 0; i <= 24; i++)
-	{
-		result += "<option value=\"" + String(i) + "\"";
-		if (selected == i)
-			result += " selected";
-		result += ">" + String(i) + "</option>";
-	}
-	return result;
-}
-
 void handleRoot()
 {
 	EEPROM.get(0, saveData);
@@ -196,6 +184,14 @@ void handleToggleMode()
 	webServer.send(303);
 }
 
+void OnInternetConnectedStateChanged()
+{
+	Serial.printf("Internet connection state changed. We're now %s\n", lastKnownInternetConnectedState ? "connected" : "disconnected");
+	if (deviceMode == nullptr)
+		return;
+
+	deviceMode->OnInternetConnectedStateChanged(lastKnownInternetConnectedState);
+}
 
 /////////////////////////////////////////////////////////////////////////////
 // Utility functions
@@ -219,6 +215,18 @@ bool attemptConnectWLAN()
 	return WiFi.status() == WL_CONNECTED;
 }
 
+bool hasInternet()
+{
+	bool result = Ping.ping(IPAddress(8,8,8,8));
+	if (result != lastKnownInternetConnectedState)
+	{
+		lastKnownInternetConnectedState = result;
+		OnInternetConnectedStateChanged();
+	}
+
+	return result;
+}
+
 void toggleDeviceMode()
 {
 	// Destroy old mode
@@ -226,6 +234,7 @@ void toggleDeviceMode()
 	doTick = false;
 	deviceMode->Stop();
 	delete deviceMode;
+	deviceMode = nullptr;
 
 	// Create new mode
 	switch(oldDeviceMode)
@@ -247,6 +256,19 @@ void toggleDeviceMode()
 
 	deviceMode->SetDisplay(&display);
 	doTick = deviceMode->Start();
+}
+
+String generateHourDropdownOptions(int selected)
+{
+	String result;
+	for (int i = 0; i <= 24; i++)
+	{
+		result += "<option value=\"" + String(i) + "\"";
+		if (selected == i)
+			result += " selected";
+		result += ">" + String(i) + "</option>";
+	}
+	return result;
 }
 
 
@@ -323,10 +345,26 @@ void setup()
 		display.ShiftRaw(data);
 
 		bool success = attemptConnectWLAN();
-		if (!success)
-			deviceMode = new DeviceModeConfig();
-		else
+		bool online = false;
+		if (success)
+		{
+			int connectionAttempts = 0;
+			while(connectionAttempts < 5)
+			{
+				Serial.println("Attempting to reach internet...");
+				online = hasInternet();
+				if(online)
+					break;
+
+				connectionAttempts++;
+				delay(1000);
+			}
+		}
+
+		if (success && online)
 			deviceMode = new DeviceModeNormal();
+		else
+			deviceMode = new DeviceModeConfig();
 
 		spotifyWebClient.setFingerprint(SPOTIFY_FINGERPRINT);
 		if (strlen(saveData.spotifyRefreshToken) > 5)

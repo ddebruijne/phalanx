@@ -30,6 +30,7 @@ public:
     virtual bool Stop() = 0;
     virtual void OnTick() = 0;
     virtual EDeviceMode GetDeviceMode() = 0;
+    virtual void OnInternetConnectedStateChanged(bool newState) {};
     inline void SetDisplay(DisplayBase* _display) { display = _display; }
 };
 
