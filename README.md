@@ -11,13 +11,15 @@ Firmware designed for projects with an ESP-M2 driving VFD or Nixie vacuum tubes
 # To Do List
 - date display (at x intervals)
 - spotify device mode & mode switching
-- Take another look at DisplayIV6::OnTick - can we avoid unneccessary shifting on full brightness for example?
 
-# Backlog features
+# Backlog features, idea list
 - defining & writing string to display
 - Animations
 - Active based on device on network. / https://github.com/dancol90/ESP8266Ping
-- Brightness for individual tubes, sometimes 
+- Smooth fading between states.
+- Brightness for individual tubes, sometimes a tube is brighter than the others and this could offset it.
+- Take another look at DisplayIV6::OnTick - can we avoid unneccessary shifting on full brightness, or outside of active hours?
+- Prettier config site, or create a mobile app
 - OTA Updates
 
 # Libraries
