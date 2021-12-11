@@ -9,6 +9,9 @@ bool DeviceModeConfig::Start()
 	IPAddress subnetMask = IPAddress(255, 255, 255, 0);
 	uint8_t macAddr[6];
 
+	if (WiFi.getMode() == WIFI_AP)
+		WiFi.mode(WIFI_STA);
+
 	WiFi.softAPmacAddress(macAddr);
 	WiFi.softAPConfig(ip, ip, subnetMask);
 	WiFi.softAP("Phalanx-IV6");

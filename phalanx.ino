@@ -212,7 +212,13 @@ bool attemptConnectWLAN()
 			break;
 	}
 
-	return WiFi.status() == WL_CONNECTED;
+	bool connected =  WiFi.status() == WL_CONNECTED;
+	if (!connected)
+	{
+		WiFi.disconnect();
+	}
+
+	return connected;
 }
 
 bool hasInternet()
