@@ -14,7 +14,7 @@ bool DeviceModeConfig::Start()
 
 	WiFi.softAPmacAddress(macAddr);
 	WiFi.softAPConfig(ip, ip, subnetMask);
-	WiFi.softAP("Phalanx-IV6");
+	WiFi.softAP(deviceName->c_str());
 
 	display->ShiftText("Conf...");
 

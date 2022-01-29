@@ -1,6 +1,11 @@
 #include "DisplayBase.h"
 #include "binary.h"
 
+/*
+    DisplayIV6 - Phalanx
+    - IV-6 is a seven-segment display with dot, so fits perfectly in a byte. Last byte is the dot.
+    - 6 tubes.
+*/
 class DisplayIV6 : public DisplayBase
 {
 public:

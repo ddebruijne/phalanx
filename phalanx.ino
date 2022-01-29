@@ -9,7 +9,20 @@
 #ifdef DISPLAYTYPE_IV6
 #include "DisplayIV6.h"
 DisplayIV6 display;
+const String deviceName = "Phalanx";
 #endif //DISPLAYTYPE_IV6
+
+#ifdef DISPLAYTYPE_IV4
+#include "DisplayIV4.h"
+DisplayIV4 display;
+const String deviceName = "Ameise";
+#endif //DISPLAYTYPE_IV4
+
+#ifdef DISPLAYTYPE_IV12
+#include "DisplayIV12.h"
+DisplayIV12 display;
+const String deviceName = "Noctiluca";
+#endif //DISPLAYTYPE_IV12
 
 #include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
@@ -41,10 +54,14 @@ bool lastKnownInternetConnectedState = false;
 void handleRoot()
 {
 	EEPROM.get(0, saveData);
-	String str = "<!DOCTYPE html><html><head><title>Phalanx</title><style>body {font: normal 12px Verdana, Arial, sans-serif;}</style></head>";
-	str.reserve(4000);	//4kb
-	str += "<body><h1>Phalanx Config</h1>";
-	str += "Current Connection Status: ";
+	String str = "<!DOCTYPE html><html><head><title>";
+	str.reserve(4500);	//4.5kb
+
+	str += deviceName;
+	str += "</title><style>body {font: normal 12px Verdana, Arial, sans-serif;}</style></head>";
+	str += "<body><h1>";
+	str += deviceName;
+	str += " Config</h1>Current Connection Status: ";
 	str += WifiStatusCode[WiFi.status()];
 
 #if DEBUGMODE != 0
@@ -315,7 +332,7 @@ void setup()
 	while (!Serial) 
 		return;
 
-	Serial.println("Phalanx is initializing...");
+	Serial.println(deviceName + " is initializing...");
 
 	// Load storage
 	EEPROM.begin(sizeof(EEPROMData));
@@ -336,7 +353,7 @@ void setup()
 	if (saveData.initialized == false)
 	{
 		saveData = EEPROMData();
-		deviceMode = new DeviceModeConfig();
+		deviceMode = new DeviceModeConfig(&deviceName);
 	}
 	else
 	{
@@ -362,7 +379,7 @@ void setup()
 		if (success && online)
 			deviceMode = new DeviceModeNormal();
 		else
-			deviceMode = new DeviceModeConfig();
+			deviceMode = new DeviceModeConfig(&deviceName);
 
 		spotifyWebClient.setFingerprint(SPOTIFY_FINGERPRINT);
 		if (strlen(saveData.spotifyRefreshToken) > 5)
@@ -375,7 +392,7 @@ void setup()
 	doTick = deviceMode->Start();
 
 	// Setup network presentation and web server.
-	MDNS.begin("Phalanx");
+	MDNS.begin(deviceName);
 
 	webServer.on("/", HTTP_GET, handleRoot);
 	webServer.on("/save", HTTP_POST, handleSave);
@@ -388,5 +405,5 @@ void setup()
 
 	MDNS.addService("http", "tcp", PORT);
 
-	Serial.println("Phalanx Initialized!");
+	Serial.println(deviceName + " Initialized!");
 }
