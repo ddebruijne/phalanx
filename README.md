@@ -18,6 +18,7 @@ Firmware designed for projects with an ESP-M2 driving VFD or Nixie vacuum tubes
   * Active Hours (tubes on between hours x and y)
 - Spotify Now Playing - Can display the progress in the song you're currently listening to
 - Live updating config (except WiFi, needs a power cycle)
+- Shifting text (IV-6)
 
 <br/>
 
@@ -53,6 +54,7 @@ Spotify setup is only available if you are already connected to a network. <br/>
 
 ## Bugs
 - Seems to be an occasional reset, something with hw interrupt?
+- Had a couple of instances where the time drifted from real time
 
 <br />
 

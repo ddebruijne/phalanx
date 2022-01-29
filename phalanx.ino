@@ -212,7 +212,13 @@ bool attemptConnectWLAN()
 			break;
 	}
 
-	return WiFi.status() == WL_CONNECTED;
+	bool connected =  WiFi.status() == WL_CONNECTED;
+	if (!connected)
+	{
+		WiFi.disconnect();
+	}
+
+	return connected;
 }
 
 bool hasInternet()
@@ -334,15 +340,7 @@ void setup()
 	}
 	else
 	{
-		char data[6] = {
-			TubeCharacter::dot,
-			TubeCharacter::dot,
-			TubeCharacter::n | TubeCharacter::dot,
-			TubeCharacter::n,
-			TubeCharacter::o,
-			TubeCharacter::c,
-		};
-		display.ShiftRaw(data);
+		display.ShiftText("Conn...");
 
 		bool success = attemptConnectWLAN();
 		bool online = false;

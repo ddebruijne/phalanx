@@ -31,7 +31,7 @@ public:
     virtual void IRAM_ATTR OnTick() {};
     virtual void ShiftCurrentTimeFull(int hour, int minute, int second, bool displayZeroFirstDigit) = 0;    // Time display as HR:MIN:SEC
     virtual void ShiftCurrentTime(int hour, int minute, int second, bool displayZeroFirstDigit) = 0;        // Time display as HR:MIN
-    virtual void ShiftRaw(char data[]) = 0;
+    virtual void ShiftText(String text) = 0;
     virtual void ShiftBlank() = 0;
     virtual void SetDimmingStep(int value) { currentDimmingStep = value; }
 };
