@@ -5,26 +5,12 @@
 bool DisplayIV6::Initialize()
 {
     Serial.println("Initializing IV-6 Display");
-
-	pinMode(GPIO_Data, OUTPUT);
-	pinMode(GPIO_Clock, OUTPUT);
-	pinMode(GPIO_Latch, OUTPUT);
-    SetPinLow(GPIO_Data);
-    SetPinLow(GPIO_Clock);
-    SetPinHigh(GPIO_Latch);
-
-    SPI.begin();
-    SPI.setDataMode(SPI_MODE0);
-    SPI.setBitOrder(MSBFIRST);
-    SPI.setClockDivider(SPI_CLOCK_DIV16);
-
-    if (currentDimmingStep > MaxDimmingSteps)
-        currentDimmingStep = MaxDimmingSteps;
+    bool init = DisplayBase_SevenSegmentVFD::Initialize();
 
     for(int tubeIndex = 0; tubeIndex < Digits; tubeIndex++)
         displayData[tubeIndex] = B11111110;
 
-    return true;
+    return init;
 }
 
 void DisplayIV6::OnTick()
