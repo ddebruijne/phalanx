@@ -1,5 +1,4 @@
 #include "DisplayBase.h"
-#include "binary.h"
 
 /*
     DisplayIV4 - Ameise
@@ -11,8 +10,6 @@ class DisplayIV12 : public DisplayBase
 {
 protected:
     const int Digits = 8;
-
-    int shiftOutIndex = 0;
     volatile byte displayData[20];
 
 public:

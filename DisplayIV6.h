@@ -1,5 +1,4 @@
 #include "DisplayBase.h"
-#include "binary.h"
 
 // Time position for when we don't display seconds.
 // Rotating between these options gives the components some downtime and should extend lifetime.

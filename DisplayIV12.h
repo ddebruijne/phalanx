@@ -1,5 +1,4 @@
 #include "DisplayBase.h"
-#include "binary.h"
 
 /*
     DisplayIV12 - Noctiluca
@@ -7,20 +6,17 @@
     - 4 tubes.
     - Grid pin is wired to dot. if blanking, we turn off the grid too.
     - TubeDigit and CharMap are largely redefinitions of the ones in DisplayIV6 (other than enabling all last bits).
-      * TODO Maybe, can be optimized by making a SevenSegment base and programmatically setting all last bits here to 1.
 */
 class DisplayIV12 : public DisplayBase
 {
 protected:
     const int Digits = 4;
-
-    int shiftOutIndex = 0;
     volatile byte displayData[4];
 
 public:
     bool Initialize();
     void IRAM_ATTR OnTick();
-    void ShiftCurrentTimeFull(int hour, int minute, int second, bool displayZeroFirstDigit);
+    void ShiftCurrentTimeFull(int hour, int minute, int second, bool displayZeroFirstDigit) { ShiftCurrentTime(hour, minute, second, displayZeroFirstDigit); }
     void ShiftCurrentTime(int hour, int minute, int second, bool displayZeroFirstDigit);
     void ShiftRaw(byte data[]);
     void ShiftText(String text);
