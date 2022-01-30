@@ -19,6 +19,7 @@ protected:
     const int GPIO_Clock = 14;
     const int GPIO_Latch = 15;
 
+    int shiftOutIndex = 0;
     volatile byte displayData[20];
 
 public:

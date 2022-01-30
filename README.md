@@ -6,9 +6,7 @@ Firmware designed for projects with an ESP-M2 driving VFD or Nixie vacuum tubes
 ## Implemented features
 - Configuration mode - will broadcast a WiFi network to set the device up if none is defined.
 - Support for multiple types of hardware
-  * 6xIV-6 Phalanx
-  * 4xIV-12 Noctiluca
-  * 8xIV-4 Ameise
+  * Currently implemented is a 6xIV-6 VFD direct drive setup.
   * New class can be inherited from DisplayBase for other boards as desired
 - Configuration stored on-device.
 - Timezones
@@ -20,7 +18,7 @@ Firmware designed for projects with an ESP-M2 driving VFD or Nixie vacuum tubes
   * Active Hours (tubes on between hours x and y)
 - Spotify Now Playing - Can display the progress in the song you're currently listening to
 - Live updating config (except WiFi, needs a power cycle)
-- Shifting text
+- Shifting text (IV-6)
 
 <br/>
 
