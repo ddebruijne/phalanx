@@ -1,6 +1,16 @@
 #include "DisplayBase.h"
 #include "binary.h"
 
+// Time position for when we don't display seconds.
+// Rotating between these options gives the components some downtime and should extend lifetime.
+enum TimePosition {
+    Middle,
+    Left,
+    Right,
+    Split,
+    MAX
+};
+
 /*
     DisplayIV6 - Phalanx
     - IV-6 is a seven-segment display with dot, so fits perfectly in a byte. Last byte is the dot.
@@ -8,29 +18,10 @@
 */
 class DisplayIV6 : public DisplayBase
 {
-public:
-    const bool RequiresTimer = true;
-
 protected:
     const int Digits = 6;
 
-    const int GPIO_Data = 13;
-    const int GPIO_Clock = 14;
-    const int GPIO_Latch = 15;
-
-    const byte TubeDigit[10] = {
-        B11111100, // 0
-        B01100000, // 1
-        B11011010, // 2
-        B11110010, // 3
-        B01100110, // 4
-        B10110110, // 5
-        B10111110, // 6
-        B11100000, // 7
-        B11111110, // 8
-        B11110110  // 9
-    };
-
+    TimePosition currentTimePosition = TimePosition::Middle;    // for when there's less numbers on screen than there are tubes.
     int lastHour = -1;
     int shiftOutIndex = 0;
     volatile byte displayData[6];
@@ -47,6 +38,19 @@ public:
 private:
     void InternalShiftTimeComponent(int number, bool displayZeroFirstDigit, bool dotOnSecondDigit);
     void InternalShiftOut(byte data);   // emulates shiftOut() with shiftOutIndex on displayData.
+};
+
+static byte TubeDigit[10] = {
+    B11111100, // 0
+    B01100000, // 1
+    B11011010, // 2
+    B11110010, // 3
+    B01100110, // 4
+    B10110110, // 5
+    B10111110, // 6
+    B11100000, // 7
+    B11111110, // 8
+    B11110110  // 9
 };
 
 static byte CharMap[128] = {

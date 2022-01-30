@@ -3,26 +3,19 @@
 
 #include <Arduino.h>
 
-// Time position for when we don't display seconds.
-// Rotating between these options gives the components some downtime and should extend lifetime.
-enum TimePosition {
-    Middle,
-    Left,
-    Right,
-    Split,
-    MAX
-};
-
 class DisplayBase
 {
 public:
-    const bool RequiresTimer = false;
+    const bool RequiresTimer = true;
     const int TimerIntervalUs = 200;
     const int MaxDimmingSteps = 8;
 
 protected:
+    const int GPIO_Data = 13;
+    const int GPIO_Clock = 14;
+    const int GPIO_Latch = 15;
     const int Digits = 0;
-    TimePosition currentTimePosition = TimePosition::Middle;    // for when there's less numbers on screen than there are tubes.
+
     volatile int currentDimmingStep = 2;
     volatile int ticksSinceLastWrite = 0;
 

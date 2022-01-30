@@ -9,15 +9,8 @@
 */
 class DisplayIV12 : public DisplayBase
 {
-public:
-    const bool RequiresTimer = true;
-
 protected:
     const int Digits = 8;
-
-    const int GPIO_Data = 13;
-    const int GPIO_Clock = 14;
-    const int GPIO_Latch = 15;
 
     int shiftOutIndex = 0;
     volatile byte displayData[20];

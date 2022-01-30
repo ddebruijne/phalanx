@@ -11,28 +11,8 @@
 */
 class DisplayIV12 : public DisplayBase
 {
-public:
-    const bool RequiresTimer = true;
-
 protected:
     const int Digits = 4;
-
-    const int GPIO_Data = 13;
-    const int GPIO_Clock = 14;
-    const int GPIO_Latch = 15;
-
-    const byte TubeDigit[10] = {
-        B11111101, // 0
-        B01100001, // 1
-        B11011011, // 2
-        B11110011, // 3
-        B01100111, // 4
-        B10110111, // 5
-        B10111111, // 6
-        B11100001, // 7
-        B11111111, // 8
-        B11110111  // 9
-    };
 
     int shiftOutIndex = 0;
     volatile byte displayData[4];
@@ -45,6 +25,19 @@ public:
     void ShiftRaw(byte data[]);
     void ShiftText(String text);
     void ShiftBlank();
+};
+
+static byte TubeDigit[10] = {
+    B11111101, // 0
+    B01100001, // 1
+    B11011011, // 2
+    B11110011, // 3
+    B01100111, // 4
+    B10110111, // 5
+    B10111111, // 6
+    B11100001, // 7
+    B11111111, // 8
+    B11110111  // 9
 };
 
 static byte CharMap[128] = {
