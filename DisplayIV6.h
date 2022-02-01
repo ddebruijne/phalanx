@@ -39,7 +39,7 @@ private:
     void InternalShiftOut(byte data);   // emulates shiftOut() with shiftOutIndex on displayData.
 };
 
-static byte TubeDigit[10] = {
+const byte TubeDigit[10] = {
     B11111100, // 0
     B01100000, // 1
     B11011010, // 2
@@ -52,7 +52,7 @@ static byte TubeDigit[10] = {
     B11110110  // 9
 };
 
-static byte CharMap[128] = {
+const byte CharMap[128] = {
     B00000000, //	0	NUL
     B00000000, //	1	SOH
     B00000000, //	2	STX

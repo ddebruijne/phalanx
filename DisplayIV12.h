@@ -23,7 +23,7 @@ public:
     void ShiftBlank();
 };
 
-static byte TubeDigit[10] = {
+const byte TubeDigit[10] = {
     B11111101, // 0
     B01100001, // 1
     B11011011, // 2
@@ -36,7 +36,7 @@ static byte TubeDigit[10] = {
     B11110111  // 9
 };
 
-static byte CharMap[128] = {
+const byte CharMap[128] = {
     B00000001, //	0	NUL
     B00000001, //	1	SOH
     B00000001, //	2	STX
