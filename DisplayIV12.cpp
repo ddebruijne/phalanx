@@ -22,7 +22,7 @@ bool DisplayIV12::Initialize()
         currentDimmingStep = MaxDimmingSteps;
 
     for(int tubeIndex = 0; tubeIndex < Digits; tubeIndex++)
-        displayData[tubeIndex] = B11111111;
+        displayData[tubeIndex] = 0b11111111;
 
     return true;
 }
@@ -34,7 +34,7 @@ void DisplayIV12::OnTick()
     if (ticksSinceLastWrite < currentDimmingStep)
     {
         for(volatile int tubeIndex = 0; tubeIndex < Digits; tubeIndex++)
-            SPI.transfer(B00000000);
+            SPI.transfer(0b00000000);
     }
     else
     {
@@ -99,5 +99,5 @@ void DisplayIV12::ShiftText(String text)
 void DisplayIV12::ShiftBlank()
 {
     for (size_t tubeIndex = 0; tubeIndex < Digits; tubeIndex++)
-        displayData[tubeIndex] = B0000000;
+        displayData[tubeIndex] = 0b0000000;
 }

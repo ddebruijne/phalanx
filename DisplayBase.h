@@ -2,7 +2,6 @@
 #define DISPLAYBASE_H
 
 #include <Arduino.h>
-#include "binary.h"
 
 class DisplayBase
 {

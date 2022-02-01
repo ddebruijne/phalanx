@@ -22,7 +22,7 @@ bool DisplayIV6::Initialize()
         currentDimmingStep = MaxDimmingSteps;
 
     for(int tubeIndex = 0; tubeIndex < Digits; tubeIndex++)
-        displayData[tubeIndex] = B11111110;
+        displayData[tubeIndex] = 0b11111110;
 
     return true;
 }
@@ -34,7 +34,7 @@ void DisplayIV6::OnTick()
     if (ticksSinceLastWrite < currentDimmingStep)
     {
         for(volatile int tubeIndex = 0; tubeIndex < Digits; tubeIndex++)
-            SPI.transfer(B00000000);
+            SPI.transfer(0b00000000);
     }
     else
     {
@@ -142,7 +142,7 @@ void DisplayIV6::ShiftText(String text)
 void DisplayIV6::ShiftBlank()
 {
     for (size_t tubeIndex = 0; tubeIndex < Digits; tubeIndex++)
-        displayData[tubeIndex] = B0000000;
+        displayData[tubeIndex] = 0b0000000;
 }
 
 void DisplayIV6::InternalShiftTimeComponent(int number, bool displayZeroFirstDigit, bool dotOnSecondDigit)

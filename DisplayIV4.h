@@ -1,5 +1,7 @@
 #include "DisplayBase.h"
 
+union iv4Data { uint32_t int32; uint8_t int8[4]; };
+
 /*
     DisplayIV4 - Ameise
     - IV-12 is a 18-segment display (including dots), including 2 dead pins on the HV5182, we need 20 bits per tube.
@@ -13,8 +15,8 @@
             5   S           15  N
             6   E           16  A
             7   D           17  H  
-            8   RDP         18  
-            9   C           19
+            8   RDP         18  Not Connected
+            9   C           19  Not Connected
 */
 class DisplayIV4 : public DisplayBase
 {
@@ -32,12 +34,14 @@ public:
     void ShiftRaw(byte data[]);
     void ShiftText(String text);
     void ShiftBlank();
+
+private:
+    void InternalShiftDigit(iv4Data tubeDigit);
 };
 
-union iv4Data { uint32_t a; uint8_t b[4]; }; // TODO name these different.
 const iv4Data TubeDigit[10] = {
-    // NOTE: uint32_t is 4bytes/24bits, and our shift register is 20bits. 4 bits get added to the front!
-    //.GFPRSED.CBOMLKNAH------
+    // NOTE: uint32_t is 32bits, and our shift register is 20bits. 12 bits get added to the front!
+    //.GFPRSED.CBOMLKNAH--
     0b01100011011000001100, // 0
     0b00000001010000000000, // 1
     0b01100010011100011000, // 2
@@ -51,8 +55,8 @@ const iv4Data TubeDigit[10] = {
 };
 
 const iv4Data CharMap[128] = {
-    // NOTE: uint32_t is 4bytes/24bits, and our shift register is 20bits. 4 bits get added to the front!
-    //.GFPRSED.CBOMLKNAH------
+    // NOTE: uint32_t is 32bits, and our shift register is 20bits. 12 bits get added to the front!
+    //.GFPRSED.CBOMLKNAH--
     0b00000000000000000000, //	0	NUL
     0b00000000000000000000, //	1	SOH
     0b00000000000000000000, //	2	STX
