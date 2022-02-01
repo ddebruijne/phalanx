@@ -51,10 +51,21 @@ void DisplayIV4::OnTick()
 
 void DisplayIV4::ShiftCurrentTimeFull(int hour, int minute, int second, bool displayZeroFirstDigit)
 {
+    InternalShiftTimeComponent(hour, displayZeroFirstDigit);
+    InternalShiftDigit(CharMap[' ']);
+    InternalShiftTimeComponent(minute, displayZeroFirstDigit);
+    InternalShiftDigit(CharMap[' ']);
+    InternalShiftTimeComponent(second, displayZeroFirstDigit);
 }
 
 void DisplayIV4::ShiftCurrentTime(int hour, int minute, int second, bool displayZeroFirstDigit)
 {
+    InternalShiftDigit(CharMap[' ']);
+    InternalShiftTimeComponent(hour, displayZeroFirstDigit);
+    InternalShiftDigit(CharMap[' ']);
+    InternalShiftDigit(CharMap[' ']);
+    InternalShiftTimeComponent(minute, displayZeroFirstDigit);
+    InternalShiftDigit(CharMap[' ']);
 }
 
 void DisplayIV4::ShiftRaw(byte data[])
@@ -137,6 +148,7 @@ void DisplayIV4::InternalShiftDigit(iv4Data tubeDigit)
         rightOnly <<= 4;
         displayData[i - 2] = displayData[i - 2] & maskRight;    // wipes left 4 bits, which we will fill
         displayData[i - 2] = displayData[i - 2] | rightOnly;    // combine with right side
+        //TODO can this be shortened to displayData[i-2] = (displayData[i-2] & maskRight) | rightOnly; ?
 
         // Take the data from the LEFT side, and move it to the RIGHT of the byte BEFORE.
         if (i == 2) continue;
@@ -152,4 +164,19 @@ void DisplayIV4::InternalShiftDigit(iv4Data tubeDigit)
     displayData[DisplayBytes-3] = displayData[DisplayBytes-3] | tubeDigit.int8[2];
     displayData[DisplayBytes-2] = tubeDigit.int8[1];
     displayData[DisplayBytes-1] = tubeDigit.int8[0];
+}
+
+void DisplayIV4::InternalShiftTimeComponent(int number, bool displayZeroFirstDigit)
+{
+    if (number > 99 || number < 0)
+        number = 0;
+
+    int firstDigit = number / 10;
+    if (firstDigit != 0 or displayZeroFirstDigit)
+	    InternalShiftDigit(TubeDigit[firstDigit]);
+    else
+	    InternalShiftDigit(CharMap[' ']);
+
+    iv4Data secondDigit = TubeDigit[number % 10];
+    InternalShiftDigit(secondDigit);
 }

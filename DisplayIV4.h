@@ -37,6 +37,7 @@ public:
 
 private:
     void InternalShiftDigit(iv4Data tubeDigit);
+    void InternalShiftTimeComponent(int number, bool displayZeroFirstDigit);
 };
 
 const iv4Data TubeDigit[10] = {
