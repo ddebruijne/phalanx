@@ -11,6 +11,7 @@ public:
     const int MaxDimmingSteps = 8;
 
 protected:
+    const int GPIO_Blank = 12;
     const int GPIO_Data = 13;
     const int GPIO_Clock = 14;
     const int GPIO_Latch = 15;

@@ -20,9 +20,12 @@ union iv4Data { uint32_t int32; uint8_t int8[4]; };
 */
 class DisplayIV4 : public DisplayBase
 {
+public:
+    const int TimerIntervalUs = 1000;
+
 protected:
     const int Digits = 8;
-    const int DisplayBytes = 20; // 20 bits * 8 tubes = 160 bits = 20 bytes.
+    const volatile int DisplayBytes = 20; // 20 bits * 8 tubes = 160 bits = 20 bytes.
 
     volatile byte displayData[20];
 

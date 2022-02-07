@@ -6,9 +6,11 @@ bool DisplayIV4::Initialize()
 {
     Serial.println("Initializing IV-4 Display");
 
+    pinMode(GPIO_Blank, OUTPUT);
 	pinMode(GPIO_Data, OUTPUT);
 	pinMode(GPIO_Clock, OUTPUT);
 	pinMode(GPIO_Latch, OUTPUT);
+    SetPinLow(GPIO_Blank);
     SetPinLow(GPIO_Data);
     SetPinLow(GPIO_Clock);
     SetPinHigh(GPIO_Latch);
@@ -76,6 +78,8 @@ void DisplayIV4::ShiftRaw(byte data[])
 
 void DisplayIV4::ShiftText(String text)
 {
+    return; // something with iv4Data crashes microcontroller?
+
     ShiftBlank();
 
     for(size_t tubeIndex = 0; tubeIndex < Digits; tubeIndex)
@@ -96,6 +100,7 @@ void DisplayIV4::ShiftBlank()
 
 void DisplayIV4::InternalShiftDigit(iv4Data tubeDigit)
 {
+    return;
     /*  
         If we could have used a 160 bit / 20 byte data type we could've easily done
         displayData <<= 20;
