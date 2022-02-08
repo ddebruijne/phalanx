@@ -78,18 +78,17 @@ void DisplayIV4::ShiftRaw(byte data[])
 
 void DisplayIV4::ShiftText(String text)
 {
-    return; // something with iv4Data crashes microcontroller?
-
     ShiftBlank();
 
-    for(size_t tubeIndex = 0; tubeIndex < Digits; tubeIndex)
+    for(size_t tubeIndex = 0; tubeIndex < Digits; tubeIndex++)
     {
-        // leave blanks for extended ascii table.
-        if (text[tubeIndex] >= sizeof(CharMap))
+        if(tubeIndex < text.length() && text[tubeIndex] < sizeof(CharMap)) {
+            InternalShiftDigit(CharMap[text[tubeIndex]]);
+        } else {
             InternalShiftDigit(CharMap[' ']);
-
-        InternalShiftDigit(CharMap[text[tubeIndex]]);
+        }
     }
+
 }
 
 void DisplayIV4::ShiftBlank()
@@ -98,9 +97,8 @@ void DisplayIV4::ShiftBlank()
         displayData[i] = 0b00000000;
 }
 
-void DisplayIV4::InternalShiftDigit(iv4Data tubeDigit)
+void DisplayIV4::InternalShiftDigit(const uint32_t &tubeDigit)
 {
-    return;
     /*  
         If we could have used a 160 bit / 20 byte data type we could've easily done
         displayData <<= 20;
@@ -165,10 +163,12 @@ void DisplayIV4::InternalShiftDigit(iv4Data tubeDigit)
 
     // in the array shape of iv4Data, the bits are back-to-front.
     // num8.int8[3] can be ignored, we only need to copy 2,5bytes/20bits
+    iv4Data conv;
+    conv.int32 = tubeDigit;
     displayData[DisplayBytes-3] = displayData[DisplayBytes-3] & maskLeft;
-    displayData[DisplayBytes-3] = displayData[DisplayBytes-3] | tubeDigit.int8[2];
-    displayData[DisplayBytes-2] = tubeDigit.int8[1];
-    displayData[DisplayBytes-1] = tubeDigit.int8[0];
+    displayData[DisplayBytes-3] = displayData[DisplayBytes-3] | conv.int8[2];
+    displayData[DisplayBytes-2] = conv.int8[1];
+    displayData[DisplayBytes-1] = conv.int8[0];
 }
 
 void DisplayIV4::InternalShiftTimeComponent(int number, bool displayZeroFirstDigit)
@@ -182,6 +182,6 @@ void DisplayIV4::InternalShiftTimeComponent(int number, bool displayZeroFirstDig
     else
 	    InternalShiftDigit(CharMap[' ']);
 
-    iv4Data secondDigit = TubeDigit[number % 10];
+    uint32_t secondDigit = TubeDigit[number % 10];
     InternalShiftDigit(secondDigit);
 }

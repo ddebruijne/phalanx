@@ -39,11 +39,11 @@ public:
     void ShiftBlank();
 
 private:
-    void InternalShiftDigit(iv4Data tubeDigit);
+    void InternalShiftDigit(const uint32_t &tubeDigit);
     void InternalShiftTimeComponent(int number, bool displayZeroFirstDigit);
 };
 
-const iv4Data TubeDigit[10] = {
+const uint32_t TubeDigit[10] = {
     // NOTE: uint32_t is 32bits, and our shift register is 20bits. 12 bits get added to the front!
     //.GFPRSED.CBOMLKNAH--
     0b01100011011000001100, // 0
@@ -58,7 +58,7 @@ const iv4Data TubeDigit[10] = {
     0b00100011011100011100, // 9
 };
 
-const iv4Data CharMap[128] = {
+const uint32_t CharMap[128] = {
     // NOTE: uint32_t is 32bits, and our shift register is 20bits. 12 bits get added to the front!
     //.GFPRSED.CBOMLKNAH--
     0b00000000000000000000, //	0	NUL
