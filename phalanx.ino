@@ -3,7 +3,7 @@
 
 #define DISPLAYTYPE_IV4
 #define PORT 80
-#define _TIMERINTERRUPT_LOGLEVEL_     0
+#define _TIMERINTERRUPT_LOGLEVEL_ 0
 #define DEBUGMODE 0
 
 #ifdef DISPLAYTYPE_IV6
@@ -75,8 +75,10 @@ void handleRoot()
 
 	str += "\"><br/>WiFi Passphrase: <input type=\"text\" name=\"password\" maxLength=32 placeholder=\"WiFi Passphrase\" value=\"";
 	str += String(saveData.wifi_pass);
+	str += "\"><br/>";
 
-	str += "\"><br/><h2>Tube Settings</h2>";
+#ifndef DISPLAYTYPE_IV4
+	str += "<h2>Tube Settings</h2>";
 	str += "Dimming: <select name=\"dimming\">";
 	for (int i = 0; i < display.MaxDimmingSteps; i++)
 	{
@@ -86,6 +88,9 @@ void handleRoot()
 		str += ">" + String(i) + "</option>";
 	}
 	str += "</select><br/>";
+#else
+	saveData.dimmingStep = 0;
+#endif
 
 	str += "<h2>Time Settings</h2>";
 	str += "Timezone: <select name=\"timezone\">";

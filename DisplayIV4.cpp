@@ -23,32 +23,9 @@ bool DisplayIV4::Initialize()
     if (currentDimmingStep > MaxDimmingSteps)
         currentDimmingStep = MaxDimmingSteps;
 
-    for(int i = 0; i < DisplayBytes; i++)
-        displayData[i] = 0b11111111;
+    ShiftBlank();
 
     return true;
-}
-
-void DisplayIV4::OnTick()
-{
-    SetPinLow(GPIO_Latch);
-
-    if (ticksSinceLastWrite < currentDimmingStep)
-    {
-        for(volatile int i = 0; i < DisplayBytes; i++)
-            SPI.transfer(0b00000000);
-    }
-    else
-    {
-        for(volatile int i = 0; i < DisplayBytes; i++)
-            SPI.transfer(displayData[i]);
-    }
-
-    SetPinHigh(GPIO_Latch);
-
-    ticksSinceLastWrite++;
-    if (ticksSinceLastWrite > currentDimmingStep)
-        ticksSinceLastWrite = 0;
 }
 
 void DisplayIV4::ShiftCurrentTimeFull(int hour, int minute, int second, bool displayZeroFirstDigit)
@@ -58,6 +35,7 @@ void DisplayIV4::ShiftCurrentTimeFull(int hour, int minute, int second, bool dis
     InternalShiftTimeComponent(minute, displayZeroFirstDigit);
     InternalShiftDigit(CharMap[' ']);
     InternalShiftTimeComponent(second, displayZeroFirstDigit);
+    InternalCommit();
 }
 
 void DisplayIV4::ShiftCurrentTime(int hour, int minute, int second, bool displayZeroFirstDigit)
@@ -68,12 +46,15 @@ void DisplayIV4::ShiftCurrentTime(int hour, int minute, int second, bool display
     InternalShiftDigit(CharMap[' ']);
     InternalShiftTimeComponent(minute, displayZeroFirstDigit);
     InternalShiftDigit(CharMap[' ']);
+    InternalCommit();
 }
 
 void DisplayIV4::ShiftRaw(byte data[])
 {
     for (size_t i = 0; i < DisplayBytes; i++)
         displayData[i] = data[i];
+
+    InternalCommit();
 }
 
 void DisplayIV4::ShiftText(String text)
@@ -89,12 +70,15 @@ void DisplayIV4::ShiftText(String text)
         }
     }
 
+    InternalCommit();
 }
 
 void DisplayIV4::ShiftBlank()
 {
     for (size_t i = 0; i < DisplayBytes; i++)
         displayData[i] = 0b00000000;
+
+    InternalCommit();
 }
 
 void DisplayIV4::InternalShiftDigit(const uint32_t &tubeDigit)
@@ -184,4 +168,14 @@ void DisplayIV4::InternalShiftTimeComponent(int number, bool displayZeroFirstDig
 
     uint32_t secondDigit = TubeDigit[number % 10];
     InternalShiftDigit(secondDigit);
+}
+
+void DisplayIV4::InternalCommit()
+{
+    SetPinLow(GPIO_Latch);
+
+    for(volatile int i = 0; i < DisplayBytes; i++)
+        SPI.transfer(displayData[i]);
+
+    SetPinHigh(GPIO_Latch);
 }
