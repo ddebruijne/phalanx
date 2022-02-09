@@ -22,6 +22,9 @@ static String DeviceModeString[4]
 
 class DeviceMode
 {
+public:
+    const uint8_t delayBetweenTicks = 1;  // 1/1000th of a second
+
 protected:
     DisplayBase *display;
 

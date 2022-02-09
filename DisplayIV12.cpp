@@ -27,7 +27,7 @@ bool DisplayIV12::Initialize()
     return true;
 }
 
-void DisplayIV12::OnTick()
+void DisplayIV12::OnTimer()
 {
     SetPinLow(GPIO_Latch);
 

@@ -7,11 +7,14 @@
 
 class DeviceModeNormal : public DeviceMode
 {
+public:
+    const uint8_t delayBetweenTicks = 100;  // 1/10th of a second
+
+private:
     WiFiUDP ntpUDP;
     NTPClient* timeClient;
     EEPROMData saveData;
 
-    const uint8_t delayBetweenTicks = 100;  // 1/10th of a second
     const uint16_t delayBetweenSettingsSync = 1000; // 1s
     uint16_t timeSinceLastSettingsSync = 0;
 

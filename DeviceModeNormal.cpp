@@ -45,9 +45,7 @@ void DeviceModeNormal::OnTick()
 			display->ShiftCurrentTime(hours, minute(localizedTime), second(localizedTime), saveData.time_displayZeroFirstDigit);
 	}
 
-	delay(delayBetweenTicks);
 	timeSinceLastSettingsSync += delayBetweenTicks;
-
 	if(timeSinceLastSettingsSync >= delayBetweenSettingsSync)
 	{
 		EEPROM.get(0, saveData);

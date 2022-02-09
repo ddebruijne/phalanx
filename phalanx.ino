@@ -308,7 +308,7 @@ void IRAM_ATTR displayTimerHandler()
 	if (!display.RequiresTimer)
 		return;
 
-	display.OnTick();
+	display.OnTimer();
 }
 
 void loop()
@@ -323,8 +323,15 @@ void loop()
 		return;
 	}
 
-	if(deviceMode != nullptr)
+	uint8_t deviceModeDelay = 1;
+	if(deviceMode != nullptr) {
 		deviceMode->OnTick();
+		deviceModeDelay = deviceMode->delayBetweenTicks;
+	}
+	
+	delay(deviceModeDelay);
+
+	display.OnTick(deviceModeDelay);
 }
 
 

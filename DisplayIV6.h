@@ -27,7 +27,7 @@ protected:
 
 public:
     bool Initialize();
-    void IRAM_ATTR OnTick();
+    void IRAM_ATTR OnTimer();
     void ShiftCurrentTimeFull(int hour, int minute, int second, bool displayZeroFirstDigit);
     void ShiftCurrentTime(int hour, int minute, int second, bool displayZeroFirstDigit);
     void ShiftRaw(byte data[]);

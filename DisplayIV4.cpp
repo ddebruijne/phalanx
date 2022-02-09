@@ -133,16 +133,13 @@ void DisplayIV4::InternalShiftDigit(const uint32_t &tubeDigit)
         // Take the data from the RIGHT side, and move it to the LEFT
         uint8_t rightOnly = displayData[i] & maskRight;
         rightOnly <<= 4;
-        displayData[i - 2] = displayData[i - 2] & maskRight;    // wipes left 4 bits, which we will fill
-        displayData[i - 2] = displayData[i - 2] | rightOnly;    // combine with right side
-        //TODO can this be shortened to displayData[i-2] = (displayData[i-2] & maskRight) | rightOnly; ?
+        displayData[i-2] = (displayData[i-2] & maskRight) | rightOnly; // wipes left 4 bits & combines with now shifted right
 
         // Take the data from the LEFT side, and move it to the RIGHT of the byte BEFORE.
         if (i == 2) continue;
         uint8_t leftOnly = displayData[i] & maskLeft;
         leftOnly >>= 4;
-        displayData[i - 3] = displayData[i - 3] & maskLeft;     // wipes right 4 bits, which we will fill
-        displayData[i - 3] = displayData[i - 3] | leftOnly;     // combine with left side.
+        displayData[i-3] = (displayData[i-3] & maskLeft) | leftOnly; // wipes right 4 bits & combines with now shifted left
     }
 
     // in the array shape of iv4Data, the bits are back-to-front.
