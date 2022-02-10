@@ -9,6 +9,6 @@ public:
 
     bool Start();
     bool Stop();
-    void OnTick();
+    void OnTick() {}
     EDeviceMode GetDeviceMode() { return EDeviceMode::Config; }
 };

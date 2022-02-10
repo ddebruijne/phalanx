@@ -28,8 +28,40 @@ bool DisplayIV4::Initialize()
     return true;
 }
 
+void DisplayIV4::OnTick(uint8_t displayModeDelay)
+{
+    if (!useDisplayText)
+        return;
+
+    if (maxOffset <= 0)
+        return;
+
+    msSinceScrollTick += displayModeDelay;
+
+    // Scroll sequence: x time idle, scrolling with interval, same idle time, reset.
+    if (isScrolling) {
+        if(textOffset > maxOffset) {
+            if (msSinceScrollTick >= ScrollStartEndDelayMs) {
+                ResetDisplayText();
+            }
+        } else {
+            if(msSinceScrollTick >= ScrollIntervalMs) {
+                msSinceScrollTick = 0;
+                textOffset++;
+                InternalShiftDigit(CharMap[displayText[Digits - 1 + textOffset]]);
+                InternalCommit();
+            }
+        }
+    } else if (msSinceScrollTick >= ScrollStartEndDelayMs) {
+        isScrolling = true;
+        msSinceScrollTick = 0;
+    }
+}
+
 void DisplayIV4::ShiftCurrentTimeFull(int hour, int minute, int second, bool displayZeroFirstDigit)
 {
+    useDisplayText = false;
+
     InternalShiftTimeComponent(hour, displayZeroFirstDigit);
     InternalShiftDigit(CharMap[' ']);
     InternalShiftTimeComponent(minute, displayZeroFirstDigit);
@@ -40,6 +72,8 @@ void DisplayIV4::ShiftCurrentTimeFull(int hour, int minute, int second, bool dis
 
 void DisplayIV4::ShiftCurrentTime(int hour, int minute, int second, bool displayZeroFirstDigit)
 {
+    useDisplayText = false;
+
     InternalShiftDigit(CharMap[' ']);
     InternalShiftTimeComponent(hour, displayZeroFirstDigit);
     InternalShiftDigit(CharMap[' ']);
@@ -51,6 +85,8 @@ void DisplayIV4::ShiftCurrentTime(int hour, int minute, int second, bool display
 
 void DisplayIV4::ShiftRaw(byte data[])
 {
+    useDisplayText = false;
+
     for (size_t i = 0; i < DisplayBytes; i++)
         displayData[i] = data[i];
 
@@ -59,22 +95,14 @@ void DisplayIV4::ShiftRaw(byte data[])
 
 void DisplayIV4::ShiftText(String text)
 {
-    ShiftBlank();
-
-    for(size_t tubeIndex = 0; tubeIndex < Digits; tubeIndex++)
-    {
-        if(tubeIndex < text.length() && text[tubeIndex] < sizeof(CharMap)) {
-            InternalShiftDigit(CharMap[text[tubeIndex]]);
-        } else {
-            InternalShiftDigit(CharMap[' ']);
-        }
-    }
-
-    InternalCommit();
+    displayText = text;
+    ResetDisplayText();
 }
 
 void DisplayIV4::ShiftBlank()
 {
+    useDisplayText = false;
+
     for (size_t i = 0; i < DisplayBytes; i++)
         displayData[i] = 0b00000000;
 
@@ -175,4 +203,29 @@ void DisplayIV4::InternalCommit()
         SPI.transfer(displayData[i]);
 
     SetPinHigh(GPIO_Latch);
+}
+
+void DisplayIV4::ResetDisplayText()
+{
+    // ex: Gefeliciteerd! (14) - 8 = 6
+    maxOffset = displayText.length() - Digits - 1;
+    textOffset = 0;
+    msSinceScrollTick = 0;
+    useDisplayText = false;
+    isScrolling = false;
+    
+    ShiftBlank();
+
+    for(size_t tubeIndex = 0; tubeIndex < Digits; tubeIndex++)
+    {
+        if(tubeIndex < displayText.length() && displayText[tubeIndex] < sizeof(CharMap)) {
+            InternalShiftDigit(CharMap[displayText[tubeIndex]]);
+        } else {
+            InternalShiftDigit(CharMap[' ']);
+        }
+    }
+
+    InternalCommit();
+
+    useDisplayText = true;
 }

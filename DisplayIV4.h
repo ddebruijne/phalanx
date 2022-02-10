@@ -26,12 +26,22 @@ public:
 protected:
     const int Digits = 8;
     const int DisplayBytes = 20; // 20 bits * 8 tubes = 160 bits = 20 bytes.
+    const int ScrollIntervalMs = 200;
+    const int ScrollStartEndDelayMs = 2000;
 
     volatile byte displayData[20];
 
+    // Display text with scrolling support - actively scrolling when maxOffset > 0
+    String displayText;
+    bool useDisplayText = false;
+    bool isScrolling = false;
+    int textOffset = 0;
+    int maxOffset = 0;
+    int msSinceScrollTick = 0;
+
 public:
     bool Initialize();
-    void OnTick(uint8_t displayModeDelay) {}
+    virtual void OnTick(uint8_t displayModeDelay) override;
     void ShiftCurrentTimeFull(int hour, int minute, int second, bool displayZeroFirstDigit);
     void ShiftCurrentTime(int hour, int minute, int second, bool displayZeroFirstDigit);
     void ShiftRaw(byte data[]);
@@ -39,9 +49,10 @@ public:
     void ShiftBlank();
 
 private:
-    void InternalShiftDigit(const uint32_t &tubeDigit);
-    void InternalShiftTimeComponent(int number, bool displayZeroFirstDigit);
-    void InternalCommit();
+    void InternalShiftDigit(const uint32_t &tubeDigit); // Shifts one value from TubeDigit or CharMap
+    void InternalShiftTimeComponent(int number, bool displayZeroFirstDigit); // Shifts a digit, optionally prefixing a 0 if < 10
+    void InternalCommit(); // Submits the data from DisplayData into the shift register
+    void ResetDisplayText(); // 
 };
 
 const uint32_t TubeDigit[10] = {

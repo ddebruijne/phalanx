@@ -16,7 +16,11 @@ bool DeviceModeConfig::Start()
 	WiFi.softAPConfig(ip, ip, subnetMask);
 	WiFi.softAP(deviceName->c_str());
 
-	display->ShiftText("Conf...");
+	#ifndef DISPLAYTYPE_IV4
+		display->ShiftText("Configure me");
+	#else
+		display->ShiftText("Conf...");
+	#endif
 
     return true;
 }
@@ -24,9 +28,4 @@ bool DeviceModeConfig::Start()
 bool DeviceModeConfig::Stop()
 {
     return true;
-}
-
-void DeviceModeConfig::OnTick()
-{
-	delay(1);
 }
