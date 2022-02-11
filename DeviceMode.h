@@ -9,7 +9,8 @@ enum EDeviceMode
     Unknown,
     Config,
     Normal,
-    Spotify
+    Spotify,
+    SerialText,
 };
 
 static String DeviceModeString[4]

@@ -6,6 +6,9 @@ bool DeviceModeSpotify::Start()
     if(!hasValidAccessToken)
     {
         Serial.println("DeviceModeSpotify: CheckAndRefreshAccessToken failed.");
+        #ifdef DISPLAYTYPE_IV4
+            display->ShiftText("Login to Spotify...");
+        #endif
         return hasValidAccessToken;
     }
 
