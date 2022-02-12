@@ -2,6 +2,7 @@
 
 #include <ESP8266WiFi.h>
 #include "constants.h"
+#include "defines.h"
 
 bool DeviceModeConfig::Start()
 {
@@ -16,7 +17,7 @@ bool DeviceModeConfig::Start()
 	WiFi.softAPConfig(ip, ip, subnetMask);
 	WiFi.softAP(deviceName->c_str());
 
-	#ifndef DISPLAYTYPE_IV4
+	#ifdef DISPLAYTYPE_IV4
 		display->ShiftText("Configure me");
 	#else
 		display->ShiftText("Conf...");

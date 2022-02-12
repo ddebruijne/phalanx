@@ -1,4 +1,5 @@
 #include "DeviceModeSpotify.h"
+#include "defines.h"
 
 bool DeviceModeSpotify::Start()
 {

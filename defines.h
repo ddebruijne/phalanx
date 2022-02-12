@@ -1,0 +1,10 @@
+#ifndef DEFINES_H
+#define DEFINES_H
+
+#define DISPLAYTYPE_IV4
+#define PORT 80
+#define _TIMERINTERRUPT_LOGLEVEL_ 0
+#define DEBUGMODE 0
+#define SERIALONLYMODE 0
+
+#endif

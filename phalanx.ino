@@ -1,10 +1,7 @@
 // Phalanx VFD Clock entrypoint
 // Copyright 2021 Danny de Bruijne. Follows MIT license (see Readme)
 
-#define DISPLAYTYPE_IV4
-#define PORT 80
-#define _TIMERINTERRUPT_LOGLEVEL_ 0
-#define DEBUGMODE 0
+#include "defines.h"
 
 #ifdef DISPLAYTYPE_IV6
 #include "DisplayIV6.h"
@@ -365,6 +362,12 @@ void setup()
 		displayTimer.attachInterruptInterval(display.TimerIntervalUs, displayTimerHandler);
 	}
 
+#if SERIALONLYMODE != 0
+	deviceMode = new DeviceModeSerialText();
+	deviceMode->SetDisplay(&display);
+	doTick = deviceMode->Start();
+	display.ShiftText("Waiting for Serial data...");
+#else
 	// Determine device mode and start it.
 	// Go to config mode if not initialized or wlan connection fails.
 	// If a successful internet connection is established, enable the normal device mode
@@ -422,6 +425,7 @@ void setup()
 	webServer.begin();
 
 	MDNS.addService("http", "tcp", PORT);
+#endif
 
 	Serial.println(deviceName + " Initialized!");
 }
