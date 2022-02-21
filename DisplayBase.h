@@ -22,8 +22,8 @@ protected:
 
 public:
     virtual bool Initialize() = 0;
-    virtual void IRAM_ATTR OnTimer() {};                // hw interrupt - all vars need volatile
-    virtual void OnTick(uint8_t displayModeDelay);   // normal cpu cycle
+    virtual void IRAM_ATTR OnTimer() = 0;                // hw interrupt - all vars need volatile
+    virtual void OnTick(uint8_t displayModeDelay) = 0;   // normal cpu cycle
     virtual void ShiftCurrentTimeFull(int hour, int minute, int second, bool displayZeroFirstDigit) = 0;    // Time display as HR:MIN:SEC
     virtual void ShiftCurrentTime(int hour, int minute, int second, bool displayZeroFirstDigit) = 0;        // Time display as HR:MIN
     virtual void ShiftText(String text) = 0;

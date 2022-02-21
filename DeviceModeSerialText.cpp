@@ -3,9 +3,9 @@
 bool DeviceModeSerialText::Start() 
 {
     #ifdef DISPLAYTYPE_IV4
-        display->ShiftText("Waiting for Serial Data");
+        display->ShiftText("........");
     #else
-        display->ShiftText("wait...");
+        display->ShiftText("...");
     #endif
 
     return true;

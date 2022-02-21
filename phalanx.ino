@@ -366,7 +366,7 @@ void setup()
 	deviceMode = new DeviceModeSerialText();
 	deviceMode->SetDisplay(&display);
 	doTick = deviceMode->Start();
-	display.ShiftText("Waiting for Serial data...");
+	display.ShiftText("........");
 #else
 	// Determine device mode and start it.
 	// Go to config mode if not initialized or wlan connection fails.

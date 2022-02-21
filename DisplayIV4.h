@@ -41,7 +41,8 @@ protected:
 
 public:
     bool Initialize();
-    virtual void OnTick(uint8_t displayModeDelay) override;
+    void OnTimer() {}
+    void OnTick(uint8_t displayModeDelay);
     void ShiftCurrentTimeFull(int hour, int minute, int second, bool displayZeroFirstDigit);
     void ShiftCurrentTime(int hour, int minute, int second, bool displayZeroFirstDigit);
     void ShiftRaw(byte data[]);
