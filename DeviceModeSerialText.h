@@ -2,9 +2,9 @@
 
 class DeviceModeSerialText : public DeviceMode
 {
-public:
     bool Start();
     bool Stop();
-    void OnTick();
-    EDeviceMode GetDeviceMode() { return EDeviceMode::SerialText; }
-};
+    void OnTick() {};
+    void OnSerialDataReceived(String s);
+    EDeviceMode GetDeviceMode() { return EDeviceMode::SerialText; };
+    };

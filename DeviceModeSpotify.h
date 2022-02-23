@@ -17,5 +17,6 @@ public:
     bool Start();
     bool Stop();
     void OnTick();
-    EDeviceMode GetDeviceMode() { return EDeviceMode::Spotify; }
+    void OnSerialDataReceived(String s) {};
+    EDeviceMode GetDeviceMode() { return EDeviceMode::Spotify; };
 };

@@ -2,6 +2,7 @@
 #define DEVICEMODE_H
 
 #include "DisplayBase.h"
+#include "defines.h"
 
 // Arduino can't use dynamic-cast, so we define the device mode here.
 enum EDeviceMode
@@ -13,12 +14,13 @@ enum EDeviceMode
     SerialText,
 };
 
-static String DeviceModeString[4]
+static String DeviceModeString[5]
 {
     String("Unknown"),
     String("Config"),
     String("Normal"),
-    String("Spotify")
+    String("Spotify"),
+    String("SerialText")
 };
 
 class DeviceMode
@@ -33,6 +35,7 @@ public:
     virtual bool Start() = 0;
     virtual bool Stop() = 0;
     virtual void OnTick() = 0;
+    virtual void OnSerialDataReceived(String s) = 0;
     virtual EDeviceMode GetDeviceMode() = 0;
     virtual void OnInternetConnectedStateChanged(bool newState) {};
     inline void SetDisplay(DisplayBase* _display) { display = _display; }

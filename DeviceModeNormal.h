@@ -16,11 +16,12 @@ private:
     EEPROMData saveData;
 
     const uint16_t delayBetweenSettingsSync = 1000; // 1s
-    uint16_t timeSinceLastSettingsSync = 0;
+    long timeSinceLastSettingsSync = 0;
 
 public:
     bool Start();
     bool Stop();
     void OnTick();
-    EDeviceMode GetDeviceMode() { return EDeviceMode::Normal; }
+    void OnSerialDataReceived(String s) {};
+    EDeviceMode GetDeviceMode() { return EDeviceMode::Normal; };
 };

@@ -45,6 +45,7 @@ WiFiClientSecure spotifyWebClient;
 SpotifyArduino *spotify = nullptr;
 bool doTick = false;
 bool lastKnownInternetConnectedState = false;
+String serialIn;
 
 /////////////////////////////////////////////////////////////////////////////
 // Events
@@ -204,13 +205,32 @@ void handleToggleMode()
 	webServer.send(303);
 }
 
-void OnInternetConnectedStateChanged()
+void onInternetConnectedStateChanged()
 {
 	Serial.printf("Internet connection state changed. We're now %s\n", lastKnownInternetConnectedState ? "connected" : "disconnected");
 	if (deviceMode == nullptr)
 		return;
 
 	deviceMode->OnInternetConnectedStateChanged(lastKnownInternetConnectedState);
+}
+
+void serialEvent()
+{
+	// Incoming serial data events
+	while (Serial.available()) {
+		char inChar = (char)Serial.read();
+		serialIn += inChar;
+		if (inChar == '\n') {
+			serialIn.trim();
+
+			if (serialIn[0] == '[')
+				handleCommand(serialIn);
+			else
+				deviceMode->OnSerialDataReceived(serialIn);
+
+			serialIn.clear();
+		}
+	}
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -247,7 +267,7 @@ bool hasInternet()
 	if (result != lastKnownInternetConnectedState)
 	{
 		lastKnownInternetConnectedState = result;
-		OnInternetConnectedStateChanged();
+		onInternetConnectedStateChanged();
 	}
 
 	return result;
@@ -257,10 +277,6 @@ void toggleDeviceMode()
 {
 	// Destroy old mode
 	EDeviceMode oldDeviceMode = deviceMode->GetDeviceMode();
-	doTick = false;
-	deviceMode->Stop();
-	delete deviceMode;
-	deviceMode = nullptr;
 
 	// Create new mode
 	switch(oldDeviceMode)
@@ -268,19 +284,49 @@ void toggleDeviceMode()
 		default:
 		case EDeviceMode::Normal:
 		{
+			setDeviceMode(EDeviceMode::Spotify);
+			break;
+		}
+		case EDeviceMode::Spotify:
+		{
+			setDeviceMode(EDeviceMode::SerialText);
+			break;
+		}
+		case EDeviceMode::SerialText:
+		{
+			setDeviceMode(EDeviceMode::Normal);
+			break;
+		}
+	}
+}
+
+void setDeviceMode(EDeviceMode newMode)
+{
+	// Destroy old mode
+	doTick = false;
+	deviceMode->Stop();
+	delete deviceMode;
+	deviceMode = nullptr;
+
+	// Create new mode
+	switch(newMode)
+	{
+		default:
+		case EDeviceMode::Normal:
+		{
+			deviceMode = new DeviceModeNormal();
+			break;
+		}
+		case EDeviceMode::Spotify:
+		{
 			deviceMode = new DeviceModeSpotify();
 			DeviceModeSpotify* dms = (DeviceModeSpotify*)deviceMode;
 			dms->spotify = spotify;
 			break;
 		}
-		case EDeviceMode::Spotify:
-		{
-			deviceMode = new DeviceModeSerialText();
-			break;
-		}
 		case EDeviceMode::SerialText:
 		{
-			deviceMode = new DeviceModeNormal();
+			deviceMode = new DeviceModeSerialText();
 			break;
 		}
 	}
@@ -302,6 +348,35 @@ String generateHourDropdownOptions(int selected)
 	return result;
 }
 
+// Returns true when device mode is switched.
+bool handleCommand(String str)
+{
+	int closingBracketIdx = str.indexOf(']');
+	if (closingBracketIdx == -1)
+		return false;
+
+	String command = str.substring(1, closingBracketIdx); 	// 1 because 0 is [
+
+	String suffix;
+	if (str.length() > closingBracketIdx+1)
+	{
+		suffix = str.substring(closingBracketIdx+1);
+		suffix.trim();
+	}
+
+	if (command.equals("MODE"))
+	{
+		if (suffix.equals("serial"))
+			setDeviceMode(EDeviceMode::SerialText);
+		else if (suffix.equals("normal"))
+			setDeviceMode(EDeviceMode::Normal);
+		else
+			Serial.println("Invalid mode: " + suffix);
+	} 
+	else
+		Serial.println("Invalid command: " + command);
+}
+
 
 /////////////////////////////////////////////////////////////////////////////
 // Loops
@@ -321,20 +396,21 @@ void loop()
 	webServer.handleClient();
 
 	// Device Mode Update Loop
-	if(!doTick) {
+	if (!doTick)
+	{
 		delay(1);
 		return;
 	}
 
 	uint8_t deviceModeDelay = 1;
-	if(deviceMode != nullptr) {
+	if (deviceMode != nullptr)
+	{
 		deviceMode->OnTick();
 		deviceModeDelay = deviceMode->delayBetweenTicks;
 	}
-	
-	delay(deviceModeDelay);
-
 	display.OnTick(deviceModeDelay);
+
+	delay(deviceModeDelay);
 }
 
 
@@ -347,6 +423,7 @@ void setup()
 	while (!Serial) 
 		return;
 
+	serialIn.reserve(200);
 	Serial.println(deviceName + " is initializing...");
 
 	// Load storage

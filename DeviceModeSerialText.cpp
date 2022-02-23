@@ -8,6 +8,8 @@ bool DeviceModeSerialText::Start()
         display->ShiftText("...");
     #endif
 
+    Serial.println("Enabled serial text mode");
+
     return true;
 }
 
@@ -16,10 +18,8 @@ bool DeviceModeSerialText::Stop()
     return true;
 }
 
-void DeviceModeSerialText::OnTick() 
+void DeviceModeSerialText::OnSerialDataReceived(String s) 
 {
-    if (Serial.available() <= 0)
-        return;
-
-    display->ShiftText(Serial.readStringUntil('\n'));
+    Serial.println(s);
+    display->ShiftText(s);
 }

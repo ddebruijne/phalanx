@@ -5,11 +5,8 @@ bool DeviceModeNormal::Start()
 {
 	EEPROM.get(0, saveData);
 
-    timeClient = new NTPClient(ntpUDP, "pool.ntp.org");
-
+    timeClient = new NTPClient(ntpUDP, "pool.ntp.org", 0, 1800000); // 30 min
 	timeClient->begin();
-	timeClient->setUpdateInterval(1800000); // 30 min
-	timeClient->setTimeOffset(0);
 
     return true;
 }
