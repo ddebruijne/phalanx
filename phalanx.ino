@@ -221,8 +221,6 @@ void serialEvent()
 		char inChar = (char)Serial.read();
 		serialIn += inChar;
 		if (inChar == '\n') {
-			serialIn.trim();
-
 			if (serialIn[0] == '[')
 				handleCommand(serialIn);
 			else
@@ -366,10 +364,16 @@ bool handleCommand(String str)
 
 	if (command.equals("MODE"))
 	{
-		if (suffix.equals("serial"))
+		if (suffix.equals("serial")) 
+		{
 			setDeviceMode(EDeviceMode::SerialText);
+			Serial.println("[OK]");
+		}
 		else if (suffix.equals("normal"))
+		{
 			setDeviceMode(EDeviceMode::Normal);
+			Serial.println("[OK]");
+		}
 		else
 			Serial.println("Invalid mode: " + suffix);
 	} 
