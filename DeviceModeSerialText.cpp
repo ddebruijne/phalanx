@@ -20,6 +20,8 @@ bool DeviceModeSerialText::Stop()
 
 void DeviceModeSerialText::OnSerialDataReceived(String s) 
 {
-    Serial.println(s);
+    s.replace("\n", "");
+    s.replace("\r", "");
+    Serial.println(String('\'') + s + String('\''));
     display->ShiftText(s);
 }

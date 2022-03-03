@@ -40,7 +40,7 @@ void DisplayIV4::OnTick(uint8_t displayModeDelay)
 
     // Scroll sequence: x time idle, scrolling with interval, same idle time, reset.
     if (isScrolling) {
-        if(textOffset > maxOffset) {
+        if(textOffset >= maxOffset) {
             if (msSinceScrollTick >= ScrollStartEndDelayMs) {
                 ResetDisplayText();
             }
@@ -208,7 +208,7 @@ void DisplayIV4::InternalCommit()
 void DisplayIV4::ResetDisplayText()
 {
     // ex: Gefeliciteerd! (14) - 8 = 6
-    maxOffset = displayText.length() - Digits - 1;
+    maxOffset = displayText.length() - Digits;
     textOffset = 0;
     msSinceScrollTick = 0;
     useDisplayText = false;
