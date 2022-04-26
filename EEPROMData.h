@@ -1,7 +1,7 @@
 #ifndef EEPROMDATA_H
 #define EEPROMDATA_H
 
-#define DATAVER 3
+#define DATAVER 2
 
 class EEPROMData {
 public:
@@ -12,7 +12,7 @@ public:
     char wifi_ssid[32] = "";
     char wifi_pass[32] = "";
     uint8_t wifi_bssid[6] = {0, 0, 0, 0, 0, 0};
-    int dimmingStep = 1;
+    int dimmingStep = 0;
 
     // Normal/Time mode settings
     int timeZone = 0;
@@ -36,7 +36,7 @@ public:
         wifi_bssid[3] = 0;
         wifi_bssid[4] = 0;
         wifi_bssid[5] = 0;
-        dimmingStep = 1;
+        dimmingStep = 0;
         timeZone = 0;
         activeHours[0] = 0;
         activeHours[1] = 0;
