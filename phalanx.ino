@@ -53,6 +53,12 @@ String serialIn;
 void handleRoot()
 {
 	EEPROM.get(0, saveData);
+	if(!saveData.initialized)
+		saveData = EEPROMData();
+
+	if(saveData.version != DATAVER)
+	 	saveData = EEPROMData();
+
 	String str = "<!DOCTYPE html><html><head><title>";
 	str.reserve(4500);	//4.5kb
 
@@ -68,11 +74,11 @@ void handleRoot()
 	str += saveData.spotifyRefreshToken;
 #endif
 
-	str += "<br/><h2>WiFi</h2>";
-	str += "<form action=\"/save\" method=\"POST\">WiFi SSID: <input type=\"text\" name=\"ssid\" maxLength=32 placeholder=\"WiFi SSID\" value=\"";
-	str += String(saveData.wifi_ssid);
+	str += "<br/><h2>WiFi</h2><form action=\"/save\" method=\"POST\">";
+	str += "Select new network: <select name=\"newnetwork\">" + generateWlanDropdownOptions() + "</select>";
+	str += "<br/>Current: " + String(saveData.wifi_ssid);
 
-	str += "\"><br/>WiFi Passphrase: <input type=\"text\" name=\"password\" maxLength=32 placeholder=\"WiFi Passphrase\" value=\"";
+	str += "<br/>Passphrase: <input type=\"text\" name=\"password\" maxLength=32 placeholder=\"WiFi Passphrase\" value=\"";
 	str += String(saveData.wifi_pass);
 	str += "\"><br/>";
 
@@ -137,11 +143,25 @@ void handleRoot()
 
 void handleSave()
 {
-	if (webServer.hasArg("ssid") && !webServer.arg("ssid").isEmpty())
-		strncpy(saveData.wifi_ssid, webServer.arg("ssid").c_str(), 32);
+	if (webServer.hasArg("newnetwork") && !webServer.arg("newnetwork").isEmpty())
+	{	
+		int network = webServer.arg("newnetwork").toInt();
+		strncpy(saveData.wifi_ssid, WiFi.SSID(network).c_str(), 32);
+		uint8_t* bssid =  WiFi.BSSID(network);
+		saveData.wifi_bssid[0] = bssid[0];
+		saveData.wifi_bssid[1] = bssid[1];
+		saveData.wifi_bssid[2] = bssid[2];
+		saveData.wifi_bssid[3] = bssid[3];
+		saveData.wifi_bssid[4] = bssid[4];
+		saveData.wifi_bssid[5] = bssid[5];
 
-	if (webServer.hasArg("password"))
-		strncpy(saveData.wifi_pass, webServer.arg("password").c_str(), 32);
+		if (webServer.hasArg("password"))
+			strncpy(saveData.wifi_pass, webServer.arg("password").c_str(), 32);
+
+		Serial.printf("Saved data: ssid:%s / pw:%s / bssid:%i:%i:%i:%i:%i:%i\n", saveData.wifi_ssid, saveData.wifi_pass, saveData.wifi_bssid[0], saveData.wifi_bssid[1], saveData.wifi_bssid[2], saveData.wifi_bssid[3], saveData.wifi_bssid[4], saveData.wifi_bssid[5]);
+
+		WiFi.scanDelete();
+	}
 
 	if (webServer.hasArg("dimming") && !webServer.arg("dimming").isEmpty())
 		saveData.dimmingStep = webServer.arg("dimming").toInt();
@@ -165,7 +185,6 @@ void handleSave()
 	if (saveData.activeHours[1] < saveData.activeHours[0])
 		saveData.activeHours[1] = saveData.activeHours[0];
 
-	Serial.printf("Saved data: ssid:%s / pw:%s\n", saveData.wifi_ssid, saveData.wifi_pass);
 	saveData.initialized = true;
 	EEPROM.put(0, saveData);
 	EEPROM.commit();
@@ -236,7 +255,7 @@ void serialEvent()
 /////////////////////////////////////////////////////////////////////////////
 bool attemptConnectWLAN()
 {
-	WiFi.begin(String(saveData.wifi_ssid), String(saveData.wifi_pass));
+	WiFi.begin(String(saveData.wifi_ssid), String(saveData.wifi_pass), 0, saveData.wifi_bssid, true);
 	uint8_t timeOutSeconds = 10;
 	uint8_t currentTimeOutSeconds = 0;
 
@@ -346,6 +365,21 @@ String generateHourDropdownOptions(int selected)
 	return result;
 }
 
+String generateWlanDropdownOptions()
+{
+	String result;
+	result += "<option value=\"\"";
+	result += "></option>";
+	uint8_t numNetworks = WiFi.scanNetworks();
+	for (int i = 0; i < numNetworks; i++)
+	{
+		result += "<option value=\"" + String(i) + "\"";
+		result += ">" + String(WiFi.SSID(i)) + "</option>";
+	}
+
+	return result;
+}
+
 // Returns true when device mode is switched.
 bool handleCommand(String str)
 {
@@ -433,6 +467,11 @@ void setup()
 	// Load storage
 	EEPROM.begin(sizeof(EEPROMData));
 	EEPROM.get(0, saveData);
+	if(!saveData.initialized)
+		saveData = EEPROMData();
+
+	if(saveData.version != DATAVER)
+	 	saveData = EEPROMData();
 
 	// Initialize display & display timer
 	display.SetDimmingStep(saveData.dimmingStep);
