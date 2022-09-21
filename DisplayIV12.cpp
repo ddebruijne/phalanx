@@ -55,21 +55,21 @@ void DisplayIV12::ShiftCurrentTime(int hour, int minute, int second, bool displa
 	hour = constrain(hour, 0, 99);
 	minute = constrain(minute, 0, 99);
 
-	// Minute: 3rd and 4th tube
-	displayData[3] = TubeDigit[minute % 10];
+	// Minute: 1st and 2nd tube
+	displayData[0] = TubeDigit[minute % 10];
 	int firstDigit = minute / 10;
 	if (firstDigit != 0 or displayZeroFirstDigit)
-		displayData[2] = TubeDigit[firstDigit];
+		displayData[1] = TubeDigit[firstDigit];
 	else
-		displayData[2] = CharMap[' '];
+		displayData[1] = CharMap[' '];
 
-	// Hour: 1st and 2nd tube
-	displayData[1] = TubeDigit[hour % 10];
+	// Hour: 3rd and 4th tube
+	displayData[2] = TubeDigit[hour % 10];
 	firstDigit = hour / 10;
 	if (firstDigit != 0 or displayZeroFirstDigit)
-		displayData[0] = TubeDigit[firstDigit];
+		displayData[3] = TubeDigit[firstDigit];
 	else
-		displayData[0] = CharMap[' '];
+		displayData[3] = CharMap[' '];
 }
 
 void DisplayIV12::ShiftRaw(byte data[])

@@ -116,9 +116,13 @@ void handleRoot()
 	if (saveData.time_displayZeroFirstDigit)
 		str += "checked";
 	
+#ifndef DISPLAYTYPE_IV12
 	str += "></br>Display seconds: <input type=\"checkbox\" id=\"time_displaySeconds\" name=\"time_displaySeconds\" ";
 	if (saveData.time_displaySeconds)
 		str += "checked";
+#else
+	saveData.time_displaySeconds = false;
+#endif
 
 	str += "><br>Active Hours: <select name=\"activehrs_begin\">" + generateHourDropdownOptions(saveData.activeHours[0]) + "</select><select name=\"activehrs_end\">" + generateHourDropdownOptions(saveData.activeHours[1]) + "</select>";
 	str += " - Equal numbers mean always visible. Don't use this for tube preservation, they are always powered.";
