@@ -1,7 +1,7 @@
 #ifndef EEPROMDATA_H
 #define EEPROMDATA_H
 
-#define DATAVER 2
+#define DATAVER 3
 
 class EEPROMData {
 public:
@@ -9,20 +9,21 @@ public:
     int version = DATAVER;
 
     // Global settings
-    char wifi_ssid[32] = "";
-    char wifi_pass[32] = "";
-    uint8_t wifi_bssid[6] = {0, 0, 0, 0, 0, 0};
+    char wifi_ssid[32];
+    char wifi_pass[32];
+    uint8_t wifi_bssid[6];
     int dimmingStep = 0;
 
     // Normal/Time mode settings
     int timeZone = 0;
-    int activeHours[2] = {0, 0};
-    bool time_12hmode = false;
-    bool time_displayZeroFirstDigit = true;
-    bool time_displaySeconds = true;
+    int activeHours[2];
+    bool time_12hmode;
+    bool time_displayZeroFirstDigit;
+    bool time_displaySeconds;
 
     // Other
-    char spotifyRefreshToken[150] = "";
+    char spotifyRefreshToken[150];
+    char stockSymbols[5][8];
 
     EEPROMData()
     {
@@ -44,6 +45,11 @@ public:
         time_displayZeroFirstDigit = true;
         time_displaySeconds = true;
         strcpy(spotifyRefreshToken, "");
+        strcpy(stockSymbols[0], "META");
+        strcpy(stockSymbols[1], "AHODF");
+        strcpy(stockSymbols[2], "AMD");
+        strcpy(stockSymbols[3], "INTC");
+        strcpy(stockSymbols[4], "AAPL");
     }
 };
 

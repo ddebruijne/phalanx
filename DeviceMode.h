@@ -12,15 +12,17 @@ enum EDeviceMode
     Normal,
     Spotify,
     SerialText,
+    StockTicker,
 };
 
-static String DeviceModeString[5]
+static String DeviceModeString[6]
 {
     String("Unknown"),
     String("Config"),
     String("Normal"),
     String("Spotify"),
-    String("SerialText")
+    String("SerialText"),
+    String("StockTicker"),
 };
 
 class DeviceMode

@@ -36,6 +36,7 @@ const String deviceName = "Noctiluca";
 #include "DeviceModeNormal.h"
 #include "DeviceModeSpotify.h"
 #include "DeviceModeSerialText.h"
+#include "DeviceModeStockTicker.h"
 
 DeviceMode *deviceMode = nullptr;
 ESP8266WebServer webServer(PORT);
