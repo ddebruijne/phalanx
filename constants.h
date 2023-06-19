@@ -80,9 +80,9 @@ public:
 
 class FinnhubConstants {
 public:
-    const char apiBaseUrl[31] = "https://finnhub.io/docs/api/v1";
-    const char stockUrl[15] = "/quote?symbol=";
-    const char tokenSuffix[8] = "&token=";
+    static constexpr char apiBaseUrl[31] = "https://finnhub.io/api/v1";
+    static constexpr char stockUrl[15] = "/quote?symbol=";
+    static constexpr char tokenSuffix[8] = "&token=";
 };
 
 static void SetPinLow(uint8_t pin) { GPOC = (1 << pin); }

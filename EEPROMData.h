@@ -23,7 +23,7 @@ public:
 
     // Other
     char spotifyRefreshToken[150];
-    char stockSymbols[5][8];
+    char stockSymbols[3][8];
 
     EEPROMData()
     {
@@ -48,8 +48,6 @@ public:
         strcpy(stockSymbols[0], "META");
         strcpy(stockSymbols[1], "AHODF");
         strcpy(stockSymbols[2], "AMD");
-        strcpy(stockSymbols[3], "INTC");
-        strcpy(stockSymbols[4], "AAPL");
     }
 };
 
