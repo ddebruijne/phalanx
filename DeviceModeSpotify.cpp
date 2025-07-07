@@ -1,9 +1,16 @@
 #include "DeviceModeSpotify.h"
 #include "defines.h"
 
+CurrentlyPlaying DeviceModeSpotify::currentlyPlaying;
+bool receivedCurrentlyPlaying = false;
+
 bool DeviceModeSpotify::Start()
 {
     hasValidAccessToken = spotify->checkAndRefreshAccessToken();
+
+    // Ensure we poll for an update immediately
+    timeSinceUpdate = timeBetweenUpdates;
+
     if(!hasValidAccessToken)
     {
         Serial.println("DeviceModeSpotify: CheckAndRefreshAccessToken failed.");
@@ -13,8 +20,7 @@ bool DeviceModeSpotify::Start()
         return hasValidAccessToken;
     }
 
-    // Ensure we poll for an update immediately
-    timeSinceUpdate = timeBetweenUpdates;
+    return false;
 }
 
 bool DeviceModeSpotify::Stop()
@@ -22,8 +28,18 @@ bool DeviceModeSpotify::Stop()
     return true;
 }
 
+void ReceiveCurrentlyPlaying(CurrentlyPlaying cur) {
+    DeviceModeSpotify::currentlyPlaying = cur;
+    receivedCurrentlyPlaying = true;
+}
+
 void DeviceModeSpotify::OnTick()
 {
+    if (receivedCurrentlyPlaying) {
+        currentSongTime = currentlyPlaying.progressMs;
+        receivedCurrentlyPlaying = false;
+    }
+
     timeSinceUpdate = millis() - lastUpdatedMillis;
 
     // Update song time
@@ -45,9 +61,7 @@ void DeviceModeSpotify::OnTick()
     if (timeSinceUpdate < timeBetweenUpdates || !hasValidAccessToken)
         return;
 
-    int status = spotify->getCurrentlyPlaying(currentlyPlaying);
-    if (status == 200)
-        currentSongTime = currentlyPlaying.progressMs;
+    int status = spotify->getCurrentlyPlaying(ReceiveCurrentlyPlaying, market);
 
     lastUpdatedMillis = millis();
     timeSinceUpdate = 0;

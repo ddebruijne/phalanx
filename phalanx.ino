@@ -418,6 +418,8 @@ bool handleCommand(String str)
 	} 
 	else
 		Serial.println("Invalid command: " + command);
+
+	return true;
 }
 
 
