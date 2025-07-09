@@ -86,6 +86,7 @@ Is a file not included in source control to contain the following variables:
 
 const char SpotifyClientId[] = "";
 const char SpotifyClientSecret[] = "";
+const char TwelveDataSecret[] = "";
 
 #endif // SECRET_H
 ```

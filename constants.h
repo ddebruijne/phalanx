@@ -78,11 +78,19 @@ public:
     }
 };
 
-class FinnhubConstants {
+class TwelveDataConstants {
 public:
-    static constexpr char apiBaseUrl[31] = "https://finnhub.io/api/v1";
-    static constexpr char stockUrl[15] = "/quote?symbol=";
-    static constexpr char tokenSuffix[8] = "&token=";
+    static constexpr char apiBaseUrl[] = "api.twelvedata.com";
+    static constexpr char stockUrl[] = "/price?symbol=";
+    static constexpr char apiKeySuffix[] = "&apikey=";
+
+    static void GetUrlForSymbol(String& str, String& symbol)
+    {
+        str = stockUrl;
+        str += symbol;
+        str += apiKeySuffix;
+        str += TwelveDataSecret;
+    }
 };
 
 static void SetPinLow(uint8_t pin) { GPOC = (1 << pin); }

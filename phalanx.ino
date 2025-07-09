@@ -128,18 +128,19 @@ void handleRoot()
 	str += "><br>Active Hours: <select name=\"activehrs_begin\">" + generateHourDropdownOptions(saveData.activeHours[0]) + "</select><select name=\"activehrs_end\">" + generateHourDropdownOptions(saveData.activeHours[1]) + "</select>";
 	str += " - Equal numbers mean always visible. Don't use this for tube preservation, they are always powered.";
 
-	str += "<br/><br/><input type=\"submit\" value=\"Save\"></form><br/><br/><br/>";
+	str += "<br/><br/><input type=\"submit\" value=\"Save\"></form>";
 
-	if (deviceMode->GetDeviceMode() != EDeviceMode::Config)
-	{
-		String authUri;
-		SpotifyApiConstants::GetAuthUri(authUri);
-		str += "<p><a href=\"" + authUri + "\">Attempt Spotify Auth</a></p>";
+	// str += "<br/><br/><br/>";
+	// if (deviceMode->GetDeviceMode() != EDeviceMode::Config)
+	// {
+	// 	String authUri;
+	// 	SpotifyApiConstants::GetAuthUri(authUri);
+	// 	str += "<p><a href=\"" + authUri + "\">Attempt Spotify Auth</a></p>";
 
-		// We only have 2 modes, normal is the default. Don't bother switching if we don't have a refresh token.
-		if (strlen(saveData.spotifyRefreshToken) > 5)
-			str += "<p><a href=\"/toggleMode\">Toggle Device Mode</a> - Current Device Mode: " + DeviceModeString[deviceMode->GetDeviceMode()] + "</p>";
-	}
+	// 	// We only have 2 modes, normal is the default. Don't bother switching if we don't have a refresh token.
+	// 	if (strlen(saveData.spotifyRefreshToken) > 5)
+	// 		str += "<p><a href=\"/toggleMode\">Toggle Device Mode</a> - Current Device Mode: " + DeviceModeString[deviceMode->GetDeviceMode()] + "</p>";
+	// }
 
 	str += "</body></html>";
 
@@ -306,15 +307,20 @@ void toggleDeviceMode()
 		default:
 		case EDeviceMode::Normal:
 		{
-			setDeviceMode(EDeviceMode::Spotify);
+			setDeviceMode(EDeviceMode::StockTicker);
 			break;
 		}
-		case EDeviceMode::Spotify:
-		{
-			setDeviceMode(EDeviceMode::SerialText);
-			break;
-		}
-		case EDeviceMode::SerialText:
+		// case EDeviceMode::Spotify:
+		// {
+		// 	setDeviceMode(EDeviceMode::SerialText);
+		// 	break;
+		// }
+		// case EDeviceMode::SerialText:
+		// {
+		// 	setDeviceMode(EDeviceMode::Normal);
+		// 	break;
+		// }
+		case EDeviceMode::StockTicker:
 		{
 			setDeviceMode(EDeviceMode::Normal);
 			break;
@@ -349,6 +355,11 @@ void setDeviceMode(EDeviceMode newMode)
 		case EDeviceMode::SerialText:
 		{
 			deviceMode = new DeviceModeSerialText();
+			break;
+		}
+		case EDeviceMode::StockTicker:
+		{
+			deviceMode = new DeviceModeStockTicker();
 			break;
 		}
 	}
