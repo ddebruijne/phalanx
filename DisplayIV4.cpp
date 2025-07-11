@@ -5,6 +5,8 @@
 bool DisplayIV4::Initialize()
 {
     Serial.println("Initializing IV-4 Display");
+    displayTextLength = 0;
+    displayText = nullptr;
 
     pinMode(GPIO_Blank, OUTPUT);
 	pinMode(GPIO_Data, OUTPUT);
@@ -41,18 +43,18 @@ void DisplayIV4::OnTick(uint8_t displayModeDelay)
     // Scroll sequence: x time idle, scrolling with interval, same idle time, reset.
     if (isScrolling) {
         if(textOffset >= maxOffset) {
-            if (msSinceScrollTick >= ScrollStartEndDelayMs) {
-                ResetDisplayText();
+            if (msSinceScrollTick >= ScrollEndDelayMs) {
+                InternalShiftDisplayTextFromBeginning();
             }
         } else {
             if(msSinceScrollTick >= ScrollIntervalMs) {
                 msSinceScrollTick = 0;
                 textOffset++;
-                InternalShiftDigit(CharMap[displayText[Digits - 1 + textOffset]]);
+                InternalShiftDigit(displayText[Digits - 1 + textOffset]);
                 InternalCommit();
             }
         }
-    } else if (msSinceScrollTick >= ScrollStartEndDelayMs) {
+    } else if (msSinceScrollTick >= ScrollStartDelayMs) {
         isScrolling = true;
         msSinceScrollTick = 0;
     }
@@ -95,8 +97,7 @@ void DisplayIV4::ShiftRaw(byte data[])
 
 void DisplayIV4::ShiftText(String text)
 {
-    displayText = text;
-    ResetDisplayText();
+    ResetDisplayText(text);
 }
 
 void DisplayIV4::ShiftBlank()
@@ -205,27 +206,63 @@ void DisplayIV4::InternalCommit()
     SetPinHigh(GPIO_Latch);
 }
 
-void DisplayIV4::ResetDisplayText()
+void DisplayIV4::ResetDisplayText(String input)
 {
-    // ex: Gefeliciteerd! (14) - 8 = 6
-    maxOffset = displayText.length() - Digits;
-    textOffset = 0;
-    msSinceScrollTick = 0;
-    useDisplayText = false;
-    isScrolling = false;
-    
+    // // ex: Gefeliciteerd! (14) - 8 = 6
+    // maxOffset = input.length() - Digits;
+    maxOffset = 0;
     ShiftBlank();
 
-    for(size_t tubeIndex = 0; tubeIndex < Digits; tubeIndex++)
-    {
-        if(tubeIndex < displayText.length() && displayText[tubeIndex] < sizeof(CharMap)) {
-            InternalShiftDigit(CharMap[displayText[tubeIndex]]);
-        } else {
-            InternalShiftDigit(CharMap[' ']);
-        }
+    useDisplayText = false;
+    if (displayText) {
+        free(displayText);
     }
 
-    InternalCommit();
+    displayTextLength = 0;
+    displayText = new uint32_t[input.length()];
 
+    size_t inputIdx = 0;
+    size_t displayTextIdx = 0;
+    for (; inputIdx < input.length(); inputIdx++)
+    {
+        if (input[displayTextIdx] < sizeof(CharMap))
+        {
+            if (CharMap[input[inputIdx]] == CharPeriod && displayTextIdx > 0 && CharMap[input[inputIdx - 1]] != CharPeriod)
+            {
+                displayTextIdx--;
+                displayText[displayTextIdx] = displayText[displayTextIdx] | CharPeriodInline;
+            }
+            else
+            {
+                displayText[displayTextIdx] = CharMap[input[inputIdx]];
+            }
+        }
+        else 
+        {
+            displayText[displayTextIdx] = CharMap[' '];
+        }
+
+        displayTextIdx++;
+    }
+
+    displayTextLength = displayTextIdx;
+    maxOffset = displayTextLength - Digits;
+
+    InternalShiftDisplayTextFromBeginning();
+}
+
+void DisplayIV4::InternalShiftDisplayTextFromBeginning() 
+{
+    textOffset = 0;
+    msSinceScrollTick = 0;
+    isScrolling = false;
+    useDisplayText = false;
+    for (size_t tubeIndex = 0; tubeIndex < Digits; tubeIndex++)
+        if (tubeIndex < displayTextLength)
+            InternalShiftDigit(displayText[tubeIndex]);
+        else
+            InternalShiftDigit(CharMap[' ']);
+
+    InternalCommit();
     useDisplayText = true;
 }

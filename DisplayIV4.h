@@ -1,4 +1,5 @@
 #include "DisplayBase.h"
+#include <limits.h>
 
 union iv4Data { uint32_t int32; uint8_t int8[4]; };
 
@@ -26,14 +27,17 @@ public:
 protected:
     const int Digits = 8;
     const int DisplayBytes = 20; // 20 bits * 8 tubes = 160 bits = 20 bytes.
-    const int ScrollIntervalMs = 200;
-    const int ScrollStartEndDelayMs = 2000;
+    const int ScrollIntervalMs = 250;
+    const int ScrollStartDelayMs = 1000 * 3;
+    const int ScrollEndDelayMs = 1000 * 3;
 
     volatile byte displayData[20];
 
     // Display text with scrolling support - actively scrolling when maxOffset > 0
-    String displayText;
+    uint32_t* displayText;
+    uint displayTextLength;
     bool useDisplayText = false;
+
     bool isScrolling = false;
     int textOffset = 0;
     int maxOffset = 0;
@@ -53,7 +57,8 @@ private:
     void InternalShiftDigit(const uint32_t &tubeDigit); // Shifts one value from TubeDigit or CharMap
     void InternalShiftTimeComponent(int number, bool displayZeroFirstDigit); // Shifts a digit, optionally prefixing a 0 if < 10
     void InternalCommit(); // Submits the data from DisplayData into the shift register
-    void ResetDisplayText(); // 
+    void ResetDisplayText(String input);
+    void InternalShiftDisplayTextFromBeginning();
 };
 
 const uint32_t TubeDigit[10] = {
@@ -72,10 +77,12 @@ const uint32_t TubeDigit[10] = {
     0b111000111011000100, // 9
 };
 
+const uint32_t CharPeriodInline = 0b000000000100000000;
+const uint32_t CharPeriod = 0b000000000000000001;
 const uint32_t CharMap[128] = {
     // NOTE:    uint32_t is 32bits, and our shift register is 20bits. 12 bits get added to the front!
     //          2 bytes are also omitted because those are not connected.
-    //HANKLMOBC.DESRPFG.
+    // HANKLMOBC.DESRPFG.
     0b000000000000000000, //	0	NUL
     0b000000000000000000, //	1	SOH
     0b000000000000000000, //	2	STX
@@ -108,7 +115,7 @@ const uint32_t CharMap[128] = {
     0b000000000000000000, //	29	GS
     0b000000000000000000, //	30	RS
     0b000000000000000000, //	31	US
-    0b000000000000000000, //	32	
+    0b000000000000000000, //	32
     0b000000001110000000, //	33	!
     0b100010000000000000, //	34	"
     0b000000000000000000, //	35	#
@@ -120,9 +127,9 @@ const uint32_t CharMap[128] = {
     0b010010000000010100, //	41	)
     0b000000000000000000, //	42	*
     0b001010100000010000, //	43	+
-    0b000000000000000001, //	44	,
+    CharPeriod,           //	44	,
     0b001000100000000000, //	45	-
-    0b000000000000000001, //	46	.
+    CharPeriod,           //	46	.
     0b000001000000001000, //	47	/
     0b110000011011000110, //	48	0
     0b000000001010000000, //	49	1

@@ -12,8 +12,8 @@ public:
 private:
     EEPROMData saveData;
     WiFiClientSecure client;
-    const uint16_t delayBetweenUpdates = 1000 * 60 * 60 * 15; // 1s * 60 * 60 * 15 = 15 min.
-    long timeSinceLastUpdate = 0;
+    const uint32_t delayBetweenUpdates = 1000 * 60 * 60 * 15; // 1s * 60 * 60 * 15 = 15 min.
+    uint32_t timeSinceLastUpdate = 0;
 
 public:
     bool Start();

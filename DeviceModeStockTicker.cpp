@@ -8,7 +8,7 @@ bool DeviceModeStockTicker::Start() {
 
     EEPROM.get(0, saveData);
 
-    display->ShiftText("Stock Ticker Starting...");
+    display->ShiftText("Loading...");
     Serial.printf("Started Stock Ticker. Connecting...\n");
 
     client.setInsecure();
@@ -23,6 +23,8 @@ bool DeviceModeStockTicker::Stop() {
 void DeviceModeStockTicker::OnTick() {
     timeSinceLastUpdate += delayBetweenTicks;
     if (timeSinceLastUpdate >= delayBetweenUpdates) {
+        // timesince=63900 - delaybetweenupd=63872 - delaybetweentick=100
+        Serial.println("timesince=" + String(timeSinceLastUpdate) + " - delaybetweenupd=" + String(delayBetweenUpdates) + " - delaybetweentick=" + String(delayBetweenTicks));
         timeSinceLastUpdate = 0;
         Serial.println("Going to update stock");
         UpdateSymbol();
@@ -65,6 +67,11 @@ bool DeviceModeStockTicker::UpdateSymbol() {
         return false;
     }
 
-    display->ShiftText("META " + String(doc["price"]));
+    // Convert to float and round to 2 decimal places
+    float priceValue = doc["price"];
+    String price = String(priceValue, 2); // 2 = number of decimal places
+
+    display->ShiftText(symbol + " " + price);
+    Serial.println(symbol + " = " + price);
     return true;
 }
